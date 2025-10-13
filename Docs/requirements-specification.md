@@ -98,7 +98,7 @@ Biztonságos fejlesztés és üzemeltetés: titkosítás átvitel és tárolás 
 
 Megőrzési és törlési politika: időzített törlés, önkiszolgáló export/törlés a felhasználói fiókban, dokumentált megőrzési idők a CV‑k és metaadatok esetén.
 
-    Megjegyzés: a fenti elemek közül a GDPR és az ahhoz kapcsolódó hatósági útmutatók kötelezőek az EU/EEA területén. Az ATS‑kompatibilitás iparági elvárás, amely jelentősen javítja a CV‑k feldolgozhatóságát és a kiválasztási esélyeket. az ISO‑szabványok és WCAG erősen ajánlottak a biztonság, minőség és hozzáférhetőség bizonyítható szintjének eléréséhez.
+*Megjegyzés: a fenti elemek közül a GDPR és az ahhoz kapcsolódó hatósági útmutatók kötelezőek az EU/EEA területén. Az ATS‑kompatibilitás iparági elvárás, amely jelentősen javítja a CV‑k feldolgozhatóságát és a kiválasztási esélyeket. az ISO‑szabványok és WCAG erősen ajánlottak a biztonság, minőség és hozzáférhetőség bizonyítható szintjének eléréséhez.*
 ​
 
 ## 6. Követelménylista

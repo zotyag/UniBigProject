@@ -1,10 +1,14 @@
 # Funkcionális Specifikáció
 
+
+
 ## 1. Jelenlegi helyzet
 
 Több oldal is létezik amin különböző önéletrajz sablonok, valamint motivációs levél sablonok szerepelnek. Azonban ezek az oldalak nem adják meg azt a pluszt , hogy a mesterséges intelligencia segítségével a felhasználó hatékonyabban és rövidebb idő alatt, írja meg ezeket a dokumentumokat.
 
 Ezen problémát szeretné ez az oldal kiküszöbölni , még pedig úgy hogy minden szükséges adat megadásával, a mesterséges inteligencia készít egy személyre szabott önéletrajzot vagy motivációs levelet. Ezen felül azoknak is biztosít lehetőséget, akik a megszokott rendszert kedvelték ,és manuálisan szeretnék megírni ezeket a dokumentumokat.
+
+
 
 ## 2. Vágyálom rendszer
 
@@ -22,7 +26,22 @@ A vágyálom rendszer főbb jellemzői:
 * **PDF exportálás:** Az elkészült dokumentumok PDF formátumban letölthetők, sablonstílus szerint formázva.
 * **Biztonság és adatvédelem:** A rendszer minden kommunikációt titkosított csatornán keresztül végez, és csak a felhasználó által megadott adatokkal dolgozik.
 
+
+
 ## 3. Jelenlegi üzleti folyamatok
+
+A jelöltek jelenleg online sablonokat töltenek le és szövegszerkesztőben manuálisan illesztik be adataikat, ami időigényes, egyenetlen minőségű és gyakran sablonos eredményhez vezet. Sok pályázó bizonytalan a megfogalmazásban és a megfelelő struktúrában, így a dokumentumok nem tükrözik jól a kompetenciákat. A munkáltatók oldalán a beérkező CV‑k heterogén felépítése nehezíti az összehasonlíthatóságot, ezért nő az igény a szabványos, géppel jól feldolgozható dokumentumokra.
+
+### Fő fájdalompontok: 
+- Minden pályázathoz külön testreszabás időterhe
+- ATS‑érzékenység formázásra és kulcsszavakra
+- Formátumválasztási bizonytalanság DOCX vs szöveg‑alapú PDF
+- Több verzió kezelése átláthatatlan fájlkezeléssel.
+
+### A vágyott állapot:
+- minimális erőfeszítéssel, néhány kattintással professzionális dokumentumok, AI‑val támogatott tartalomgenerálás, strukturált JSON‑alapú mentés és többféle sablonból PDF export.
+
+​
 
 ## 4. Igényelt üzleti folyamatok
 
@@ -71,6 +90,8 @@ A felhasználó egy szövegszerkesztőhöz hasonló felületen írhatja meg saj�
 A felhasználó elfelejtett jelszava esetén a rendszer egy jelszóvisszaállító e-mailt küld a megadott címre, amely tartalmaz egy egyszer használatos linket.
 A link segítségével a felhasználó új jelszót adhat meg.
 A folyamat során minden adat biztonságosan, titkosított módon kerül kezelésre.
+
+
 
 ## 5. Követelménylista
 
@@ -152,7 +173,26 @@ A folyamat során minden adat biztonságosan, titkosított módon kerül kezelé
 * 5.2.2 A navigáció dinamikusan történik, oldalfrissítés nélkül (SPA).
 * 5.2.3 Hibás útvonal esetén 404-es oldal jelenjen meg.
 
+
+
 ## 6. Használati esetek
+
+### Vendég
+
+Regisztráció e‑mail, felhasználónév és jelszó megadásával, majd bejelentkezés a platformra.
+
+Opcionálisan: elfelejtett jelszó folyamat indítása e‑mailes emlékeztetővel.
+
+### Bejelentkezett felhasználó
+
+- Profilkezelés: alapadatok megadása és mentése a későbbi CV/levél generáláshoz (név, elérhetőség, tapasztalat, képzettség, nyelvismeret).
+- CV készítés AI‑val: űrlap kitöltése, backend AI modul hívása, JSON struktúra mentése a fiókba, több sablonból PDF generálása.
+- CV készítés manuálisan: interaktív szerkesztőben szekciók összeállítása, JSON mentés, PDF export.
+- Motivációs levél AI‑al: célpozíció, cég, tapasztalatok megadása, személyre szabott szöveg generálása, szerkesztés és PDF export.
+- Motivációs levél manuálisan: saját szöveg írása az alkalmazásban, későbbi PDF exporttal.
+- Verziókezelés alapjai: több dokumentumváltozat tárolása külön célpozíciókra a JSON‑alapú mentés révén, exportálhatóság biztosítása.
+​
+
 
 ## 7. Megfeleltetés, hogyan fedik le a használati esetek a követelményeket
 
@@ -168,4 +208,33 @@ Vegyük ezeket sorba:
 
 * Felhasználói felület és élmény: A felhasználók letisztult reszponzív felületet kapnak , amelynek főoldaláról elérhetik a különböző funkciókat. Az adminak biztositani kell hogy az AI műveletei alatt betöltés jelző, legyen illetve választ kapjon a felhasználó a müvelet sikeresége vagy hibája felől.
 
+
+
 ## 8. Fogalomszótár
+
+- Önéletrajz (CV): Álláspályázati dokumentum, amely a jelölt személyes adatait, szakmai tapasztalatait, végzettségét és készségeit foglalja össze, a rendszerben JSON‑ból generált és PDF‑be exportált formában.
+
+- Motivációs levél: Pályázati levél, amelyben a jelölt megindokolja alkalmasságát és motivációját egy konkrét pozícióra; AI‑val generálható vagy manuálisan szerkeszthető, majd PDF‑be exportálható.
+
+- AI (mesterséges intelligencia) dokumentumgenerálás: Olyan folyamat, amelyben a backend külső AI szolgáltatást hív a felhasználó által megadott adatok alapján, és strukturált kimenetet (JSON) kap vissza önéletrajz vagy motivációs levél előállításához.
+
+- JSON: Strukturált adatcsere‑formátum, amelyben a rendszer a dokumentumok tartalmi szerkezetét tárolja és amelyből különböző sablonok szerint PDF generálható.
+
+- PDF export: A rendszer által előállított végleges, letölthető dokumentumformátum önéletrajzhoz és motivációs levélhez, sablonstílus alkalmazásával.
+
+- Sablon: Előre definiált megjelenési és elrendezési minta, amelyhez a JSON‑ban tárolt tartalom illesztésével készül a végső PDF dokumentum.
+
+- Manuális szerkesztés: Olyan működési mód, amelyben a felhasználó AI segítsége nélkül, űrlapon vagy szerkesztőfelületen viszi be és módosítja a dokumentum tartalmát.
+
+- ATS (Applicant Tracking System): Jelentkezőkövető rendszer, amely a beérkező önéletrajzokat feldolgozza és kulcsszavak alapján szűri; az ATS‑kompatibilis CV géppel jól értelmezhető szerkezetet és formázást használ.
+
+- Verziókezelés: Azonos jelölt külön célpozíciókra készült több dokumentumváltozatának tárolása és visszakereshetősége a rendszerben.
+
+- Token: Olyan aláírt azonosító adategység, amellyel a rendszer a bejelentkezett felhasználó munkamenetét kezeli és a hozzáféréseket igazolja.
+
+- Adatbiztonság: Az adatok védelme átvitel közben és tároláskor.
+
+- Backend AI modul: A szerveroldali komponens, amely az AI szolgáltatást hívja, a válaszokat JSON‑ná alakítja és a felhasználói fiókhoz rendeli.
+
+- Export: A rendszerből kimeneti fájl (pl. PDF) létrehozása és letöltése a felhasználó eszközére.
+
