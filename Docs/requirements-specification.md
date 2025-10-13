@@ -2,7 +2,7 @@
 
 ## 1. Jelenlegi helyzet
 
-A mai világban az embereknek szükségük van önéletrajzra és motivációs levélre, hogy munkát találjanak. Sokan nem szeretnek önéletrajzot vagy motivációs levelet írni, mivel sok idő elmegy velük. Amíg a felhasználó minden ponthoz beír valamit az önéletrajzában és megprobál valami jó szöveget írni a motivációs levélhez rengeteg idó telik el.
+A mai világban az embereknek szükségük van önéletrajzra és motivációs levélre, hogy munkát találjanak. Sokan nem szeretnek önéletrajzot vagy motivációs levelet írni, mivel sok idő elmegy velük. Amíg a felhasználó minden ponthoz beír valamit az önéletrajzában és megprobál valami jó szöveget írni a motivációs levélhez rengeteg idő telik el.
 
 ## 2. Vágyálom rendszer
 
@@ -102,6 +102,13 @@ Megőrzési és törlési politika: időzített törlés, önkiszolgáló export
 ​
 
 ## 6. Követelménylista
+
+1. Reszponzív dizájn
+2. Ai által generált CV készítése
+3. Ai által generált motivációs levél készítése
+4. Manuálisan készíthető CV
+5. Manuálisan készíthető motivációs levél
+6. Mentési funkció
 
 ## 7. Fogalomszótár
 
