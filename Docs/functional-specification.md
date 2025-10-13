@@ -70,6 +70,84 @@ A folyamat során minden adat biztonságosan, titkosított módon kerül kezelé
 
 ## 5. Követelménylista
 
+### 1. Felhasználókezelés
+
+#### 1.1. Regisztráció
+
+* 1.1.1 A rendszernek lehetővé kell tennie új felhasználók regisztrációját.
+* 1.1.2 A regisztráció során felhasználónév, jelszó és e-mail cím megadása kötelező.
+* 1.1.3 A rendszer ellenőrizze, hogy a felhasználónév és az e-mail cím egyedi.
+* 1.1.4 A jelszót biztonságosan, hash-elve kell tárolni.
+
+#### 1.2. Bejelentkezés
+
+* 1.2.1 A felhasználó be tud jelentkezni érvényes adatokkal.
+* 1.2.2 Hibás adatok esetén a rendszer hibaüzenetet ad.
+* 1.2.3 A rendszer kezelje a munkameneteket (JWT token vagy session segítségével).
+
+#### 1.3. Jelszó-visszaállítás
+
+* 1.3.1 A felhasználó kérhet jelszó-emlékeztetőt vagy új jelszót az e-mail címe megadásával.
+* 1.3.2 A rendszer biztonságos, ideiglenes jelszó-visszaállítási linket küld az e-mail címre.
+* 1.3.3 A visszaállítási link csak korlátozott ideig legyen érvényes.
+
+### 2. Önéletrajz (CV) kezelése
+
+#### 2.1 AI alapú CV generálás
+
+* 2.1.1 A rendszernek lehetővé kell tennie a felhasználónak adatai megadását űrlapon keresztül.
+* 2.1.2 A rendszer az adatokat elküldi egy AI API-nak (pl. OpenAI API).
+* 2.1.3 Az AI válasza JSON formátumban érkezik vissza.
+* 2.1.4 A JSON struktúra alapján a rendszer képes PDF-et generálni különböző sablonok szerint.
+* 2.1.5 A felhasználó választhat előre definiált sablonok közül.
+* 2.1.6 A generált CV-t a felhasználó megtekintheti és szerkesztheti.
+
+#### 2.2. Manuális CV készítés
+
+* 2.2.1 A felhasználó létrehozhat új önéletrajzot manuálisan, AI segítség nélkül.
+* 2.2.2 A CV adatait űrlapon keresztül adja meg.
+* 2.2.3 A manuálisan megadott adatok JSON formátumban kerülnek mentésre.
+* 2.2.4 A felhasználó a CV-t PDF formátumban le tudja tölteni.
+
+### 3. Motivációs levél kezelése
+
+#### 3.1. AI alapú levél generálás
+
+* 3.1.1 A rendszer lehetővé teszi a motivációs levél generálását az AI segítségével.
+* 3.1.2 A felhasználó megadhatja a pozíciót, vállalat nevét és egyéb releváns adatokat.
+* 3.1.3 Az AI a megadott adatok alapján szöveges motivációs levelet generál.
+* 3.1.4 A generált levél szerkeszthető
+* 3.1.5 A motivációs levelet PDF formátumban le lehet tölteni.
+
+#### 3.2. Manuális levél készítés
+
+* 3.2.1 A felhasználó képes saját maga motivációs levelet írni űrlapon keresztül.
+* 3.2.2 A manuálisan megadott szöveg szerkeszthető
+* 3.2.3 A felhasználó a levelet PDF formátumban exportálhatja.
+
+### 4. Biztonság és adatvédelem
+
+#### 4.1 Adatbiztonság
+
+* 4.1.1 A jelszavakat hash-elve kell tárolni.
+* 4.1.2 Az AI API kulcsokat csak a szerveroldalon szabad tárolni.
+* 4.1.3 Az adatátvitel HTTPS protokollon keresztül történjen.
+
+### 5. Felhasználói felület és élmény
+
+#### 5.1 Általános követelmények
+
+* 5.1.1 Az alkalmazás reszponzív és mobilbarát legyen.
+* 5.1.2 A felhasználói felület legyen letisztult és áttekinthető.
+* 5.1.3 Az AI hívások ideje alatt betöltés-jelző (loading indicator) jelenjen meg.
+* 5.1.4 Minden művelet után visszajelzést kell adni (siker, hiba stb.).
+
+#### 5.2 Felhasználói navigáció
+
+* 5.2.1 A főmenüből elérhetők: Új CV generálás, Profil.
+* 5.2.2 A navigáció dinamikusan történik, oldalfrissítés nélkül (SPA).
+* 5.2.3 Hibás útvonal esetén 404-es oldal jelenjen meg.
+
 ## 6. Használati esetek
 
 ## 7. Megfeleltetés, hogyan fedik le a használati esetek a követelményeket
