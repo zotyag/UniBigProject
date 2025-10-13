@@ -2,6 +2,8 @@
 
 ## 1. Jelenlegi helyzet
 
+A mai világban az embereknek szükségük van önéletrajzra és motivációs levélre, hogy munkát találjanak. Sokan nem szeretnek önéletrajzot vagy motivációs levelet írni, mivel sok idő elmegy velük. Amíg a felhasználó minden ponthoz beír valamit az önéletrajzában és megprobál valami jó szöveget írni a motivációs levélhez rengeteg idó telik el.
+
 ## 2. Vágyálom rendszer
 
 A rendszer célja, hogy egy modern, reszponzív és felhasználóbarát webalkalmazást biztosítson a felhasználók számára, mely lehetővé teszi önéletrajzok és motivációs levelek létrehozását, valamint letöltését AI által generált és manuális (AI nélkül) módon.
