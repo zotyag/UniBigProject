@@ -103,12 +103,12 @@ Megőrzési és törlési politika: időzített törlés, önkiszolgáló export
 
 ## 6. Követelménylista
 
-1. Reszponzív dizájn
-2. Ai által generált CV készítése
-3. Ai által generált motivációs levél készítése
-4. Manuálisan készíthető CV
-5. Manuálisan készíthető motivációs levél
-6. Mentési funkció
+1. Reszponzív dizájn - az oldal illeszkedjen a felhasználói felülethez 
+2. Ai által generált CV készítése - legyen benne egy funció ahol adatok megadásával az Ai készít nekünk egy CV-t
+3. Ai által generált motivációs levél készítése - legyen benne egy funció ahol adatok megadásával az Ai készít nekünk egy motivációs levelet
+4. Manuálisan készíthető CV - mi magunk legyünk képesek egy CV-t készíteni
+5. Manuálisan írható motivációs levél - mi magunk legyünk képesek egy motivációs levelet írni
+6. Mentési funkció - PDF formátumban le lehesen menteni ezeket
 
 ## 7. Fogalomszótár
 
