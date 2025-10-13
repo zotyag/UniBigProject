@@ -17,7 +17,7 @@ A motivációs levél generálása hasonló módon történik: a felhasználó m
 
 A jelenlegi üzleti folyamat elsősorban a hagyományos önéletrajz‑készítésre épül, amely sok időt, kézi munkát és előzetes tapasztalatot igényel. A legtöbb álláskereső különböző sablonokat tölt le az internetről, majd szövegszerkesztőben manuálisan szerkeszti saját adatait. Ez a folyamat nemcsak időigényes, hanem sok esetben sablonos eredményhez vezet. Emellett a felhasználók gyakran bizonytalanok abban, hogy hogyan fogalmazzanak meg szakmai tapasztalatukat vagy milyen formátumban mutassák be képességeiket, ezért a végeredmény gyakran nem tükrözi megfelelően a jelentkező kompetenciáit.
 
-A munkáltatók oldaláról nézve a beérkező önéletrajzok minősége és struktúrája nagyon eltérő, ami megnehezíti az összehasonlítást és a kiválasztási folyamatot. A digitális környezetben egyre inkább igény van automatizált, jól strukturált dokumentumokra, azonban a jelenlegi megoldások nem kínálnak személyre szabott, mégis professzionális eredményt minden felhasználónak.
+A munkáltatók oldaláról nézve a beérkező önéletrajzok minősége és struktúrája nagyon eltérő, ami megnehezíti az összehasonlítást és a kiválasztási folyamatot. A digitális környezetben egyre inkább igény van automatizált, jól strukturált dokumentumokra, azonban a jelenlegi megoldások nem kínálnak személyre szabott és professzionális eredményt minden felhasználónak.
 
 ### Fő fájdalompontok
 
@@ -104,7 +104,7 @@ Megőrzési és törlési politika: időzített törlés, önkiszolgáló export
 ## 6. Követelménylista
 
 1. Reszponzív dizájn - az oldal illeszkedjen a felhasználói felülethez 
-2. Ai által generált CV készítése - legyen benne egy funció ahol adatok megadásával az Ai készít nekünk egy CV-t
+2. Ai által generált CV készítése - legyen benne egy funkció ahol adatok megadásával az Ai készít nekünk egy CV-t
 3. Ai által generált motivációs levél készítése - legyen benne egy funció ahol adatok megadásával az Ai készít nekünk egy motivációs levelet
 4. Manuálisan készíthető CV - mi magunk legyünk képesek egy CV-t készíteni
 5. Manuálisan írható motivációs levél - mi magunk legyünk képesek egy motivációs levelet írni
