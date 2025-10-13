@@ -156,4 +156,16 @@ A folyamat során minden adat biztonságosan, titkosított módon kerül kezelé
 
 ## 7. Megfeleltetés, hogyan fedik le a használati esetek a követelményeket
 
+Vegyük ezeket sorba:
+
+* Felhasználókezelés: A felhasználók képesek regisztrálni az oldalra felhasználónév, email és jelszó segítségével. Ezek segítségével betud lépni, viszont ha esetleg a jelszót elfelejti a megadott email címre kap egy jelszó-visszaálitási linket.
+
+* Önéletrajz (CV) kezelése: A felhasználó adatait megadva, AI segítségével kapni fog egy CV-t ami képes szerkezteni később. A felhasználó AI segítség nélkül is készíthet CV-t adatai meg adásával.
+
+* Motivációs levél kezelése: A felhasználó megadja az adatokat a munkáról, ahova szeretné ezt motivációs levelet felhasználni.Ezeket az AI értelmezi, majd generál egy motivációs levelet hozzá, amit a felhasználó letölthet PDF formátumban. A felhasználó ezt manuálisan is elkészítheti, majd letöltheti PDF formában
+
+* Biztonság és adatvédelem: Az admin a jelszavakat biztonságosan eltárolja, amihez csak ő férhet hozzá.Ezen felül AI API-t is eltárolja a szerveroldalon.
+
+* Felhasználói felület és élmény: A felhasználók letisztult reszponzív felületet kapnak , amelynek főoldaláról elérhetik a különböző funkciókat. Az adminak biztositani kell hogy az AI műveletei alatt betöltés jelző, legyen illetve választ kapjon a felhasználó a müvelet sikeresége vagy hibája felől.
+
 ## 8. Fogalomszótár
