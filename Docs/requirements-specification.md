@@ -15,6 +15,35 @@ A motivációs levél generálása hasonló módon történik: a felhasználó m
 
 ## 4. Igényelt üzleti folyamatok
 
+A rendszer működésének fő üzleti folyamatai az alábbi lépések köré szerveződnek:
+
+### Regisztráció és bejelentkezés
+
+A felhasználó egy egyszerű űrlapon regisztrál a platformra, megadva e-mail címét, felhasználónevét és jelszavát.
+A jelszó titkosítva kerül tárolásra.
+Sikeres regisztráció után a felhasználó be tud jelentkezni a rendszerbe, ahol CV-t és motivációs levelet tud létrehozni.
+A felhasználó jelszóemlékeztetőt kérhet e-mailben, ha bejelentkezés során elfelejtené a jelszavát.
+
+### CV készítés (AI segítségével)
+
+A felhasználó egy űrlapon megadja alapadatait (név, elérhetőség, tapasztalat, képzettség, nyelvismeret, stb.)
+A megadott adatok a backendre kerülnek, ahol az AI-t meghívó modul JSON formátumban kap választ.
+Az AI által generált adatstruktúra a felhasználó fiókjához mentésre kerül, és abból egy PDF dokumentum készíthető.
+
+### CV készítés manuálisan
+
+A felhasználó teljes mértékben saját maga is összeállíthatja az önéletrajzát egy interaktív űrlapon keresztül.
+Az adatok a rendszerben ugyanúgy JSON formátumban kerülnek tárolásra, mint az AI-generált dokumentumok, így azok is bármikor PDF-fé konvertálhatók.
+
+### Motivációs levél generálása (AI segítségével)
+
+A felhasználó megadja az alapvető paramétereket (cég neve, pozíció, rövid leírás, tapasztalatok), majd az AI ezek alapján létrehoz egy személyre szabott motivációs levelet.
+A generált szöveg szerkeszthető és PDF-be exportálható.
+
+### Motivációs levél manuális készítése
+
+A felhasználó manuálisan is létrehozhat motivációs levelet a platformon belül, amely később exportálható PDF formátumban.
+
 ## 5. A rendszerre vonatkozó szabályok
 
 ## 6. Követelménylista
