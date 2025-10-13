@@ -2,6 +2,10 @@
 
 ## 1. Jelenlegi helyzet
 
+Több oldal is létezik amin különböző önéletrajz sablonok, valamint motivációs levél sablonok szerepelnek. Azonban ezek az oldalak nem adják meg azt a pluszt , hogy a mesterséges intelligencia segítségével a felhasználó hatékonyabban és rövidebb idő alatt, írja meg ezeket a dokumentumokat.
+
+Ezen problémát szeretné ez az oldal kiküszöbölni , még pedig úgy hogy minden szükséges adat megadásával, a mesterséges inteligencia készít egy személyre szabott önéletrajzot vagy motivációs levelet. Ezen felül azoknak is biztosít lehetőséget, akik a megszokott rendszert kedvelték ,és manuálisan szeretnék megírni ezeket a dokumentumokat.
+
 ## 2. Vágyálom rendszer
 
 A rendszer célja egy olyan modern és felhasználóbarát webes platform megvalósítása, amely segíti a felhasználókat az álláspályázati dokumentumaik - elsősorban az önéletrajz és a motivációs levél - gyors, pontos és esztétikus elkészítésében.
