@@ -132,7 +132,6 @@ Az alkalmazás webes platformra készül, amely elsősorban desktop, de mobil es
 
 - Export naplózás verzió és sablonazonosítóval, re‑generálhatóság biztosítása azonos tartalomból.
 
-    ​
 ### API vázlat
 
 - Auth: POST /auth/register, POST /auth/login, POST /auth/forgot, POST /auth/reset, POST /auth/refresh.
@@ -147,8 +146,6 @@ Az alkalmazás webes platformra készül, amely elsősorban desktop, de mobil es
 
 - Compliance: GET /me/consents, POST /me/consents, DELETE /me/account (törlés).
 
-    ​
-
 ### Üzemeltetés
 
 Architektúra Azure Virtual Machine‑en: 1–2 darab Linux alapú VM a Backend Gateway és a háttér‑workerek futtatására, PostgREST a VM‑en szolgáltatásként fut a PostgreSQL mellett, MongoDB külön VM‑en vagy ugyanazon a példányon dedikált erőforrás‑profilokkal, hálózati szegmentációval.
@@ -156,6 +153,118 @@ Architektúra Azure Virtual Machine‑en: 1–2 darab Linux alapú VM a Backend 
 
 
 ## 8. Adatbázis terv
+
+A webapp adatbázisa két tárolási rétegre lesz bontva: relációs (PostgreSQL) a felhasználói fiókokhoz, biztonsági és metaadat-kezeléshez, valamint egy dokumentumorientált (MongoDB) a rugalmas, verziózható CV/levél tartalomhoz és AI-folyamat naplózáshoz.
+
+### Áttekintés
+
+PostgreSQL: users, sessions/tokens, templates, exports, consents, password_resets, audit_logs, document_index meta-táblák a jogosultság, megfelelés és kereshetőség miatt.
+
+​MongoDB: documents, document_versions és ai_jobs kollekciók a struktúrált JSON tartalom és AI-folyamatok tárolására, indexelve userId, documentId, type, updatedAt szerint a gyors lekérdezéshez.
+
+### Elv és felosztás
+
+- PostgreSQL: felhasználói fiókok, sablon meta és a dokumentumok könnyű listázhatóságát segítő index-meta (referenciák a Mongo objektumokra).
+
+- MongoDB: dokumentumtartalom JSON-ban és minden verzió külön dokumentumban, AI-folyamat napló opcionálisan ide tehető a későbbiekben.
+
+### PostgreSQL táblák
+
+- **users:** id (PK), email UNIQUE, username UNIQUE, password_hash, role ENUM('user','admin'), created_at.
+Indexek: unique(email), unique(username), idx_users_role.
+  
+- **templates:** id (PK), code UNIQUE, name, kind ENUM('cv','cover_letter'), is_active, created_at.
+*Megjegyzés: schema_json nem kötelező az MVP-hez.*
+
+- **document_index:** id (PK), user_id (FK → users.id), doc_type ENUM('cv','cover_letter'), title, slug UNIQUE per user, mongo_document_id (ObjectId hex), current_version INT, updated_at, created_at.
+Indexek: unique(user_id, slug), idx_doc_user, idx_doc_type, idx_doc_updated_at.
+​
+### MongoDB kollekciók
+- **documents:** _id ObjectId, userId (Postgres users.id), type: 'cv'|'cover_letter', title, templateCode, contentJSON, state: 'draft'|'final', currentVersion, createdAt, updatedAt
+Indexek: { userId: 1, type: 1, updatedAt: -1 }, opcionális { title: "text" }.
+
+- **document_versions** _id ObjectId, documentId (ref documents._id), version (int), contentJSON, changeNote, createdAt, createdBy (userId).
+Egyedi index: { documentId: 1, version: 1 }, lekérdezéshez { documentId: 1, createdAt: -1 }.
+
+*Megjegyzés: a document_index.mongo_document_id mutat a documents._id-re, a document_index.current_version pedig szinkronban van a Mongo legutóbbi version mezőjével; listázás és keresés Postgresből gyors, a tényleges tartalom MongoDB-ből jön.*
+
+### PostgreSQL DBML
+
+    Enum user_role { user; admin }
+    Enum doc_type { cv; cover_letter }
+
+    Table users {
+    id integer [pk, increment]
+    email varchar(320) [unique, not null]
+    username varchar(64) [unique, not null]
+    password_hash varchar(255) [not null]
+    role user_role [not null, default: 'user']
+    created_at timestamp [not null, default: `now()`]
+    }
+
+    Table templates {
+    id integer [pk, increment]
+    code varchar(64) [unique, not null]
+    name varchar(128) [not null]
+    kind doc_type [not null]
+    is_active boolean [not null, default: true]
+    created_at timestamp [not null, default: `now()`]
+    }
+
+    Table document_index {
+    id bigint [pk, increment]
+    user_id integer [not null]
+    doc_type doc_type [not null]
+    title varchar(200) [not null]
+    slug varchar(120) [not null]
+    mongo_document_id varchar(32) [not null, note: 'Mongo ObjectId hex']
+    current_version integer [not null, default: 1]
+    created_at timestamp [not null, default: `now()`]
+    updated_at timestamp [not null, default: `now()`]
+    indexes {
+        (user_id, slug) [unique]
+        user_id
+        doc_type
+        updated_at
+    }
+    }
+
+    Ref: document_index.user_id > users.id [delete: cascade]
+
+![Image of Relaional Database](./Images/relationaldb_dbml.svg)
+
+### MongoDB DBML
+
+    // documents
+    {
+    "_id": "ObjectId('...')",
+    "userId": 123,
+    "type": "cv",
+    "title": "Senior JS CV",
+    "templateCode": "classic-cv-v2",
+    "contentJSON": { "profile": { "name": "..." }, "experience": [ ... ], "education": [ ... ] },
+    "state": "draft",
+    "currentVersion": 3,
+    "createdAt": "2025-10-18T17:00:00Z",
+    "updatedAt": "2025-10-18T17:10:00Z"
+    }
+
+    // document_versions
+    {
+    "_id": "ObjectId('...')",
+    "documentId": "ObjectId('...')",
+    "version": 3,
+    "contentJSON": { /* a 3. verzió teljes tartalma */ },
+    "changeNote": "Kulcsszavak frissítve",
+    "createdAt": "2025-10-18T17:10:00Z",
+    "createdBy": 123
+    }
+
+*Megjegyzés:*
+- *A JSON tartalom és verziók NoSQL-ben természetesen kezelhetők, olcsó append mintával; a listázást gyorsító meta adatok Postgresben stabilak és jól indexelhetők.*
+- *Az export és password reset elhagyásával csökken a komplexitás, miközben a fő felhasználói érték (CV/levél szerkesztés, verziózás, sablonozás) megmarad; szükség esetén később visszailleszthetők.*
+​
+
 
 ## 9. Implementációs terv
 
