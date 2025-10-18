@@ -84,6 +84,77 @@ Az alkalmazás webes platformra készül, amely elsősorban desktop, de mobil es
 
 ## 7. Architekturális terv
 
+![Image of architectural plan](Images/architectural_plan.svg)
+
+### Backend
+
+- Node.js + Express REST API
+
+- Fő modulok: Auth, Users, Documents CV és letter, Templates, PDF, AI Orchestrator, Logging, Export
+
+- JSON a belső tartalomformátum
+
+- AI Orchestrator külső AI API‑t hív személyre szabott CV generáláshoz, bemenet a felhasználói űrlapadat, kimenet strukturált JSON, amely a fiókhoz mentődik és szerkeszthető
+
+- Hitelesítés JWT‑vel, jelszó hash‑elve
+
+- Biztonság: HTTPS kötelező, AI API kulcs csak szerveren, bemeneti validáció minden végponton, OWASP best practice, titkosítás tranzitban és nyugalomban
+
+### Adatbázis
+
+- PostgreSQL a törzs és metaadatokra: users, sessions/tokens, document_index, templates, exports, audit_logs, consents, password_resets; a document_index sor kapcsolja a dokumentum metaadatokat a MongoDB-ben tárolt tartalomhoz
+
+- MongoDB (dokumentum-tároló) a rugalmas tartalomra és verziózásra: documents kollekció a CV/levél teljes JSON tartalommal és szerkesztési állapotokkal, document_versions kollekció visszagörgethető változatokkal, valamint opcionális ai_jobs a bemenet/kimenet és validáció naplózására az AI-folyamatokhoz.
+
+- Indexelés és teljesítmény: MongoDB-ben indexek userId + documentId, updatedAt és type mezőkre a tartalom-lekérésekhez és verziólistákhoz.
+
+### Web kliens
+
+- Reactreszponzív UI, űrlap‑vezérelt adatbevitel, élő validáció és állapotjelzések (loading, hiba) AI hívásoknál
+
+- Funkciók: regisztráció/bejelentkezés, profiladatok, AI‑alapú és manuális CV szerkesztő, sablonválasztó, verziók listája, PDF exportok letöltése.
+
+### AI integráció
+
+- Backend AI Orchestrator modul felel a prompt‑összeállításért, kimenet‑validációért (JSON schema), visszatérési idempotencia‑kulcsért és hibák elegáns degradációjáért (fallback manuális módra)
+
+- AI bemenet: személyes adatok, tapasztalat, képzettség, készségek, célpozíció
+
+- AI kimenet: strukturált CV/levél JSON szerkeszthető mezőkkel és szerkezettel.
+
+- Átláthatóság: AI‑használat jelzése, manuális felülbírálhatóság, export előtti előnézet
+
+### PDF és sablonok
+
+- Sablonmotor több stílussal, szöveg‑alapú PDF generálás képi szöveg beágyazása nélkül az ATS kompatibilitásért.
+
+- Export szolgáltatás soros feldolgozással és várólistával, hogy elkerülje renderelési tüskék okozta erőforrás‑kimerülést.
+
+- Export naplózás verzió és sablonazonosítóval, re‑generálhatóság biztosítása azonos tartalomból.
+
+    ​
+### API vázlat
+
+- Auth: POST /auth/register, POST /auth/login, POST /auth/forgot, POST /auth/reset, POST /auth/refresh.
+
+- Profile: GET/PUT /users/me.
+
+- Documents:
+    - CV: POST /cv (AI), POST /cv/manual, GET /cv/:id, PUT /cv/:id, GET /cv, POST /cv/:id/export.
+    - Cover letter: POST /letters (AI), POST /letters/manual, GET/PUT /letters/:id, GET /letters, POST /letters/:id/export.
+
+- Templates: GET /templates, GET /templates/:id (admin: POST/PUT/DELETE).
+
+- Compliance: GET /me/consents, POST /me/consents, DELETE /me/account (törlés).
+
+    ​
+
+### Üzemeltetés
+
+Architektúra Azure Virtual Machine‑en: 1–2 darab Linux alapú VM a Backend Gateway és a háttér‑workerek futtatására, PostgREST a VM‑en szolgáltatásként fut a PostgreSQL mellett, MongoDB külön VM‑en vagy ugyanazon a példányon dedikált erőforrás‑profilokkal, hálózati szegmentációval.
+
+
+
 ## 8. Adatbázis terv
 
 ## 9. Implementációs terv
