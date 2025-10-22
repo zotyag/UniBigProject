@@ -1,7 +1,5 @@
 # Rendszerterv
 
-
-
 ## 1. A rendszer célja
 
 A rendszer célja, hogy megkönnyítse az emberek számára az önéletrajz és a motivációs levél megírását. A mai világban az emberek nehezen tudnak olyan dokumentumokat írni ami nyelvtanilag helyes és szakmailag is megállja a helyét. Ezt hivatott megkönnyíteni ez a rendszer, amely mesterséges intelligencia segítségével elkészíti a kívánt önéletrajzot és motivációs levelet. Csupán az adatainak megadásával kaphat egy jó alapot amit alakithat.
@@ -15,8 +13,6 @@ A cél mindkét esetben az lenne, hogy egy szép, rendezett, összeszedett és �
 ## 3. Követelmények
 
 ## 4. Funkcionális terv
-
-
 
 ## 5. Fizikai környezet
 
@@ -36,15 +32,13 @@ Az alkalmazás webes platformra készül, amely elsősorban desktop, de mobil es
 
 **Verziókezelés és DevOps:** Git és GitHub
 
-
-
 ## 6. Absztrakt domain modell
 
 ### Domain Objektumok
 
 - User
 - Profile
-- CV 
+- CV
 - WorkExperience
 - Education
 - Skill
@@ -55,9 +49,9 @@ Az alkalmazás webes platformra készül, amely elsősorban desktop, de mobil es
 
 ### Főbb folyamatok és domain logika
 
-#### Dokumentumgenerálás folyamat (AI-alapú):
+#### Dokumentumgenerálás folyamat (AI-alapú)
 
-- Felhasználói input: A User kitölti az űrlapot a frontend felületen 
+- Felhasználói input: A User kitölti az űrlapot a frontend felületen
 - Validálás: A backend érvényesíti a bemeneti adatokat
 - AI modul hívása: AIRequest entitás jön létre, a backend meghívja a Google Gemini API-t
 - JSON válasz feldolgozása: Az AI strukturált JSON formátumban visszaküldi a generált tartalmat
@@ -68,25 +62,24 @@ Az alkalmazás webes platformra készül, amely elsősorban desktop, de mobil es
 - PDF generálás: A frontend PDF generáló könyvtár segítségével elkészíti a dokumentumot
 - Letöltés: A felhasználó letöltheti a PDF-et
 
-#### Manuális dokumentumkészítés folyamat:
+#### Manuális dokumentumkészítés folyamat
 
 - Űrlap kitöltése: A felhasználó minden mezőt manuálisan kitölt AI segítség nélkül
 - Adatok mentése: A rendszer JSON struktúrába menti az adatokat
 - Sablon kiválasztása és export: Ugyanaz, mint az AI-alapú folyamatnál
 
-#### Verziókezelés:
+#### Verziókezelés
 
 - Egy felhasználó több dokumentumverziót tárolhat különböző célpozíciókra
 - Minden dokumentumnak egyedi azonosítója és neve van, a nevet a felhasználó adja
 - A contentJSON mező rugalmas tartalomtárolást tesz lehetővé
 
-#### Biztonság és adatvédelem a domain szintjén:
+#### Biztonság és adatvédelem a domain szintjén
 
 - Jelszókezelés: A passwordHash mező bcrypt algoritmussal hash-elt jelszót tárol, így a jelszó soha nem kerül plain text formában mentésre
 - Munkamenet-kezelés: JWT token alapú hitelesítés biztosítja, hogy csak a bejelentkezett felhasználók férjenek hozzá saját adataikhoz
 - Titkosított kommunikáció: Minden adat HTTPS protokollon keresztül kerül átvitelre
 ​
-
 
 ## 7. Architekturális terv
 
@@ -145,8 +138,8 @@ Az alkalmazás webes platformra készül, amely elsősorban desktop, de mobil es
 - Profile: GET/PUT /users/me.
 
 - Documents:
-    - CV: POST /cv (AI), POST /cv/manual, GET /cv/:id, PUT /cv/:id, GET /cv, POST /cv/:id/export.
-    - Cover letter: POST /letters (AI), POST /letters/manual, GET/PUT /letters/:id, GET /letters, POST /letters/:id/export.
+  - CV: POST /cv (AI), POST /cv/manual, GET /cv/:id, PUT /cv/:id, GET /cv, POST /cv/:id/export.
+  - Cover letter: POST /letters (AI), POST /letters/manual, GET/PUT /letters/:id, GET /letters, POST /letters/:id/export.
 
 - Templates: GET /templates, GET /templates/:id (admin: POST/PUT/DELETE).
 
@@ -155,8 +148,6 @@ Az alkalmazás webes platformra készül, amely elsősorban desktop, de mobil es
 ### Üzemeltetés
 
 Architektúra Azure Virtual Machine‑en: 1–2 darab Linux alapú VM a Backend Gateway és a háttér‑workerek futtatására, PostgREST a VM‑en szolgáltatásként fut a PostgreSQL mellett, MongoDB külön VM‑en vagy ugyanazon a példányon dedikált erőforrás‑profilokkal, hálózati szegmentációval.
-
-
 
 ## 8. Adatbázis terv
 
@@ -185,7 +176,9 @@ Indexek: unique(email), unique(username), idx_users_role.
 - **document_index:** id (PK), user_id (FK → users.id), doc_type ENUM('cv','cover_letter'), title, slug UNIQUE per user, mongo_document_id (ObjectId hex), current_version INT, updated_at, created_at.
 Indexek: unique(user_id, slug), idx_doc_user, idx_doc_type, idx_doc_updated_at.
 ​
+
 ### MongoDB kollekciók
+
 - **documents:** _id ObjectId, userId (Postgres users.id), type: 'cv'|'cover_letter', title, templateCode, contentJSON, state: 'draft'|'final', currentVersion, createdAt, updatedAt
 Indexek: { userId: 1, type: 1, updatedAt: -1 }, opcionális { title: "text" }.
 
@@ -267,15 +260,167 @@ Egyedi index: { documentId: 1, version: 1 }, lekérdezéshez { documentId: 1, cr
     }
 
 *Megjegyzés:*
+
 - *A JSON tartalom és verziók NoSQL-ben természetesen kezelhetők, olcsó append mintával; a listázást gyorsító meta adatok Postgresben stabilak és jól indexelhetők.*
 - *Az export és password reset elhagyásával csökken a komplexitás, miközben a fő felhasználói érték (CV/levél szerkesztés, verziózás, sablonozás) megmarad; szükség esetén később visszailleszthetők.*
 ​
 
-
 ## 9. Implementációs terv
+
+### Fejlesztési környezet
+
+A rendszer fejlesztése több komponensű architektúrában történik, a következő technológiákra építve:
+
+- Frontend: React.js
+- Backend: Node.js + Express.js
+- Adatbázis: MongoDB és PostgreSQL
+- AI integráció: OpenAI API
+- Stílus: Bootstrap 5 + Tailwind CSS
+- Verziókezelés: Git + GitHub
+- Csomagkezelő: npm
+- Fejlesztői eszközök: VSCode
+
+A fejlesztés platform független, a projekt minden tagja saját környezetben dolgozik, közös GitHub repository használatával.
+A backend és frontend külön mappában helyezkednek el, de a projekt közös root könyvtárból indítható.
+
+### Fejlesztési folyamat
+
+A fejlesztés agilis módszertan szerint történik, öt sprint keretében.
+
+#### Sprint fázisok
+
+1. Sprint 1: Alap projektstruktúra, routing, felhasználói authentikáció.
+2. Sprint 2: CV generálás és PDF export implementálása.
+3. Sprint 3: CV szerkeztő és sablon funkció.
+4. Sprint 4: Motivációs levél generátor fejlesztése.
+5. Sprint 5: Tesztelés, hibajavítások, deployment
+
+### Kódolási szabványok
+
+- JavaScript ES6+ szabvány követése.
+- Komponensek vene PascalCase, függvények és változók camelCase konvencióval.
+- Minden backend endpointhoz rövid komment a működésről.
+- Hibakezelés: try/catch + központi error middleware.
+- Git commit üzenetek: Conventional Commits.
+
+### Integráció
+
+A frontend és a backend kommunikációja REST API-n keresztül történik.
+Az AI-komponens a backendből érhető el, így az API kulcsok védve maradnak.
+
+#### Adatáramlás példa (CV generálás)
+
+1. A felhasználó a React formon megadja az adatait.
+2. A frontend POST kérést küld a backend végpontjára.
+3. A backend az AI API-nak továbbítja a promptot.
+4. A válasz JSON formátumban érkezik, amit a szerver elment az adatbázisba.
+5. A frontend megjeleníti az elkészült CV-t, és felajánlja a PDF exportot.
 
 ## 10. Tesztterv
 
+A tesztelés célja annak biztosítása, hogy a fejlesztett webalkalmazás megfeleljen a funkcionális és nem funkcionális követelményeknek, hibamentesen működjön, valamint a felhasználók számára stabil és biztonságos élményt nyújtson.
+A tesztelés kiterjed mind a kliensoldali (React), mind a szerveroldali (Node.js, Express) komponensekre, valamint az AI API-val való kommunikációra és az adatbázis-kezelésre is.
+
+### Tesztelési szintek
+
+#### 1) Egységteszt (Unit Test)
+
+Cél: az egyes komponensek (függvények, modulok, React-komponensek) működésének ellenőrzése izolált környezetben.
+
+#### 2) Integrációs teszt
+
+Cél: a komponensek együttműködésének ellenőrzése (pl. frontend–backend, backend–adatbázis, backend–AI API).
+
+#### 3) Rendszerteszt
+
+Cél: az egész rendszer működésének validálása a valós folyamatokon keresztül.
+A teszt a frontend, backend, adatbázis és AI integráció együttes működését vizsgálja.
+
+### Tesztelési módszerek
+
+| Típus                 | Módszer            | Leírás                                                               |
+| --------------------- | ------------------ | -------------------------------------------------------------------- |
+| Funkcionális teszt    | Manuális           | Ellenőrzés, hogy minden funkció a specifikáció szerint működik       |
+| Regressziós teszt     | Automatizált       | Frissítések után a korábban működő funkciók továbbra is helyesek     |
+| Teljesítményteszt     | Félig automatizált | A rendszer válaszidejének vizsgálata (pl. AI hívások, PDF generálás) |
+| Biztonsági teszt      | Manuális           | Jogosultsági szintek, tokenek, jelszóhash-elés ellenőrzése           |
+| Használhatósági teszt | Manuális           | Felhasználói visszajelzések gyűjtése a UI használhatóságáról         |
+
+### Hibakezelés és naplózás
+
+A hibákat több szinten kezeljük:
+
+- Frontend: felhasználóbarát hibaüzenetek
+- Backend: hiba naplózása a szerveren
+- Tesztelés: sikertelen tesztek automatikus jelentése
+
 ## 11. Telepítési terv
 
+A telepítés célja, hogy a fejlesztett webalkalmazás működőképes formában elérhetővé váljon a végfelhasználók számára, stabil és biztonságos környezetben.
+A rendszer két fő komponensből áll: a frontend (React) és a backend (Node.js / Express). A két komponens külön futtatható, de együttműködik egy közös API interfészen keresztül.
+
+### Telepítési előfeltételek
+
+| Komponens     | Előfeltétel                                                               |
+| ------------- | ------------------------------------------------------------------------- |
+| Backend       | Node.js, NPM, konfigurált `.env` fájl |
+| Frontend      | Node.js beállítás                     |
+| Adatbázis     | Létrehozott MongoDB adatbázis és felhasználói jogosultság                 |
+| AI API        | Érvényes API kulcs és megfelelő kvóta                                     |
+| Verziókezelés | Git, GitHub repository elérhetősége                                       |
+
+### Telepítési lépések
+
+#### Backend (Node.js / Express)
+
+1. GitHub repository klónozása
+2. Függőségek telepítése
+3. `.env` fájl konfigurálása
+4. Fejlesztői futtatás:
+
+    ```bash
+    npm run dev
+    ```
+
+5. Éles build futtatása
+
+    ```bash
+    npm start
+    ```
+
+#### Frontend (React)
+
+1. GitHub repository klónozása
+2. Függőségek telepítése
+3. Környezeti változók beállítása
+4. Fejlesztői futtatás:
+
+    ```bash
+    npm start
+    ```
+
+5. Éles build futtatása
+
+    ```bash
+    npm run build
+    ```
+
 ## 12. Karbantartási terv
+
+A karbantartás célja, hogy az alkalmazás stabil, biztonságos és naprakész maradjon a használat során, valamint biztosítsa a gyors hibajavítást és a további fejlesztések lehetőségét.
+
+### Karbantartás típusai
+
+1. Corrective Maintenance: A felhasználók vagy tesztelők által jelzett hibák javítása.
+2. Adaptive Maintenance: A rendszer frissítése a környezet változásai miatt.
+3. Perfective Maintenance: Új funkciók hozzáadása, teljesítmény és megbízhatóság javítása.
+4. Preventive Maintenance: Olyan problémák elhárítása, amelyek még nem kritikusak, de később problémát okozhatnak.
+
+### Karbantartási folyamat
+
+1. Hiba vagy igény észlelése: felhasználói jelentés, tesztelés vagy fejlesztői megfigyelés
+2. Elemzés és osztályozás: hibajavítás, környezeti frissítés vagy funkcióbővítés szükséges-e.
+3. Módosítás: a hibát, frissítést vagy új funkciót implementáljuk a megfelelő modulba
+4. Tesztelés: az érintett funkciók újratesztelése unit és integrációs tesztekkel.
+5. Deployment: a frissített alkalmazás telepítése
+6. Dokumentálás: minden változást dokumentálni kell, verziókövetéssel és commit üzenetekkel.
