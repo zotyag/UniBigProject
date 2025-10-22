@@ -4,6 +4,12 @@
 
 ## 1. A rendszer célja
 
+A rendszer célja, hogy megkönnyítse az emberek számára az önéletrajz és a motivációs levél megírását. A mai világban az emberek nehezen tudnak olyan dokumentumokat írni ami nyelvtanilag helyes és szakmailag is megállja a helyét. Ezt hivatott megkönnyíteni ez a rendszer, amely mesterséges intelligencia segítségével elkészíti a kívánt önéletrajzot és motivációs levelet. Csupán az adatainak megadásával kaphat egy jó alapot amit alakithat.
+
+Emellett azoknak is jutt hely, akik nem bíznak a mesterséges intelligenciában, vagy szimplán jobban szeretik saját maguk megírni ezen dokumentumokat. Az oldal nekik sablonokat tartogat, amik közül kiválaszthatják a nekik tetszöt.
+
+A cél mindkét esetben az lenne, hogy egy szép, rendezett, összeszedett és átlátható önéletrajzot vagy motivációs levelet tudjon küldeni a munkaadónak.
+
 ## 2. Üzleti folyamatok modellje
 
 ## 3. Követelmények
