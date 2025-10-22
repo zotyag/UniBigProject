@@ -312,6 +312,42 @@ Az AI-komponens a backendből érhető el, így az API kulcsok védve maradnak.
 
 ## 10. Tesztterv
 
+A tesztelés célja annak biztosítása, hogy a fejlesztett webalkalmazás megfeleljen a funkcionális és nem funkcionális követelményeknek, hibamentesen működjön, valamint a felhasználók számára stabil és biztonságos élményt nyújtson.
+A tesztelés kiterjed mind a kliensoldali (React), mind a szerveroldali (Node.js, Express) komponensekre, valamint az AI API-val való kommunikációra és az adatbázis-kezelésre is.
+
+### Tesztelési szintek
+
+#### 1) Egységteszt (Unit Test)
+
+Cél: az egyes komponensek (függvények, modulok, React-komponensek) működésének ellenőrzése izolált környezetben.
+
+#### 2) Integrációs teszt
+
+Cél: a komponensek együttműködésének ellenőrzése (pl. frontend–backend, backend–adatbázis, backend–AI API).
+
+#### 3) Rendszerteszt
+
+Cél: az egész rendszer működésének validálása a valós folyamatokon keresztül.
+A teszt a frontend, backend, adatbázis és AI integráció együttes működését vizsgálja.
+
+### Tesztelési módszerek
+
+| Típus                 | Módszer            | Leírás                                                               |
+| --------------------- | ------------------ | -------------------------------------------------------------------- |
+| Funkcionális teszt    | Manuális           | Ellenőrzés, hogy minden funkció a specifikáció szerint működik       |
+| Regressziós teszt     | Automatizált       | Frissítések után a korábban működő funkciók továbbra is helyesek     |
+| Teljesítményteszt     | Félig automatizált | A rendszer válaszidejének vizsgálata (pl. AI hívások, PDF generálás) |
+| Biztonsági teszt      | Manuális           | Jogosultsági szintek, tokenek, jelszóhash-elés ellenőrzése           |
+| Használhatósági teszt | Manuális           | Felhasználói visszajelzések gyűjtése a UI használhatóságáról         |
+
+### Hibakezelés és naplózás
+
+A hibákat több szinten kezeljük:
+
+- Frontend: felhasználóbarát hibaüzenetek
+- Backend: hiba naplózása a szerveren
+- Tesztelés: sikertelen tesztek automatikus jelentése
+
 ## 11. Telepítési terv
 
 ## 12. Karbantartási terv
