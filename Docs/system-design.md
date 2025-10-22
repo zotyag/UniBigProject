@@ -1,7 +1,5 @@
 # Rendszerterv
 
-
-
 ## 1. A rendszer célja
 
 ## 2. Üzleti folyamatok modellje
@@ -9,8 +7,6 @@
 ## 3. Követelmények
 
 ## 4. Funkcionális terv
-
-
 
 ## 5. Fizikai környezet
 
@@ -30,15 +26,13 @@ Az alkalmazás webes platformra készül, amely elsősorban desktop, de mobil es
 
 **Verziókezelés és DevOps:** Git és GitHub
 
-
-
 ## 6. Absztrakt domain modell
 
 ### Domain Objektumok
 
 - User
 - Profile
-- CV 
+- CV
 - WorkExperience
 - Education
 - Skill
@@ -49,9 +43,9 @@ Az alkalmazás webes platformra készül, amely elsősorban desktop, de mobil es
 
 ### Főbb folyamatok és domain logika
 
-#### Dokumentumgenerálás folyamat (AI-alapú):
+#### Dokumentumgenerálás folyamat (AI-alapú)
 
-- Felhasználói input: A User kitölti az űrlapot a frontend felületen 
+- Felhasználói input: A User kitölti az űrlapot a frontend felületen
 - Validálás: A backend érvényesíti a bemeneti adatokat
 - AI modul hívása: AIRequest entitás jön létre, a backend meghívja a Google Gemini API-t
 - JSON válasz feldolgozása: Az AI strukturált JSON formátumban visszaküldi a generált tartalmat
@@ -62,25 +56,24 @@ Az alkalmazás webes platformra készül, amely elsősorban desktop, de mobil es
 - PDF generálás: A frontend PDF generáló könyvtár segítségével elkészíti a dokumentumot
 - Letöltés: A felhasználó letöltheti a PDF-et
 
-#### Manuális dokumentumkészítés folyamat:
+#### Manuális dokumentumkészítés folyamat
 
 - Űrlap kitöltése: A felhasználó minden mezőt manuálisan kitölt AI segítség nélkül
 - Adatok mentése: A rendszer JSON struktúrába menti az adatokat
 - Sablon kiválasztása és export: Ugyanaz, mint az AI-alapú folyamatnál
 
-#### Verziókezelés:
+#### Verziókezelés
 
 - Egy felhasználó több dokumentumverziót tárolhat különböző célpozíciókra
 - Minden dokumentumnak egyedi azonosítója és neve van, a nevet a felhasználó adja
 - A contentJSON mező rugalmas tartalomtárolást tesz lehetővé
 
-#### Biztonság és adatvédelem a domain szintjén:
+#### Biztonság és adatvédelem a domain szintjén
 
 - Jelszókezelés: A passwordHash mező bcrypt algoritmussal hash-elt jelszót tárol, így a jelszó soha nem kerül plain text formában mentésre
 - Munkamenet-kezelés: JWT token alapú hitelesítés biztosítja, hogy csak a bejelentkezett felhasználók férjenek hozzá saját adataikhoz
 - Titkosított kommunikáció: Minden adat HTTPS protokollon keresztül kerül átvitelre
 ​
-
 
 ## 7. Architekturális terv
 
@@ -139,8 +132,8 @@ Az alkalmazás webes platformra készül, amely elsősorban desktop, de mobil es
 - Profile: GET/PUT /users/me.
 
 - Documents:
-    - CV: POST /cv (AI), POST /cv/manual, GET /cv/:id, PUT /cv/:id, GET /cv, POST /cv/:id/export.
-    - Cover letter: POST /letters (AI), POST /letters/manual, GET/PUT /letters/:id, GET /letters, POST /letters/:id/export.
+  - CV: POST /cv (AI), POST /cv/manual, GET /cv/:id, PUT /cv/:id, GET /cv, POST /cv/:id/export.
+  - Cover letter: POST /letters (AI), POST /letters/manual, GET/PUT /letters/:id, GET /letters, POST /letters/:id/export.
 
 - Templates: GET /templates, GET /templates/:id (admin: POST/PUT/DELETE).
 
@@ -149,8 +142,6 @@ Az alkalmazás webes platformra készül, amely elsősorban desktop, de mobil es
 ### Üzemeltetés
 
 Architektúra Azure Virtual Machine‑en: 1–2 darab Linux alapú VM a Backend Gateway és a háttér‑workerek futtatására, PostgREST a VM‑en szolgáltatásként fut a PostgreSQL mellett, MongoDB külön VM‑en vagy ugyanazon a példányon dedikált erőforrás‑profilokkal, hálózati szegmentációval.
-
-
 
 ## 8. Adatbázis terv
 
@@ -179,7 +170,9 @@ Indexek: unique(email), unique(username), idx_users_role.
 - **document_index:** id (PK), user_id (FK → users.id), doc_type ENUM('cv','cover_letter'), title, slug UNIQUE per user, mongo_document_id (ObjectId hex), current_version INT, updated_at, created_at.
 Indexek: unique(user_id, slug), idx_doc_user, idx_doc_type, idx_doc_updated_at.
 ​
+
 ### MongoDB kollekciók
+
 - **documents:** _id ObjectId, userId (Postgres users.id), type: 'cv'|'cover_letter', title, templateCode, contentJSON, state: 'draft'|'final', currentVersion, createdAt, updatedAt
 Indexek: { userId: 1, type: 1, updatedAt: -1 }, opcionális { title: "text" }.
 
@@ -261,12 +254,61 @@ Egyedi index: { documentId: 1, version: 1 }, lekérdezéshez { documentId: 1, cr
     }
 
 *Megjegyzés:*
+
 - *A JSON tartalom és verziók NoSQL-ben természetesen kezelhetők, olcsó append mintával; a listázást gyorsító meta adatok Postgresben stabilak és jól indexelhetők.*
 - *Az export és password reset elhagyásával csökken a komplexitás, miközben a fő felhasználói érték (CV/levél szerkesztés, verziózás, sablonozás) megmarad; szükség esetén később visszailleszthetők.*
 ​
 
-
 ## 9. Implementációs terv
+
+### Fejlesztési környezet
+
+A rendszer fejlesztése több komponensű architektúrában történik, a következő technológiákra építve:
+
+- Frontend: React.js
+- Backend: Node.js + Express.js
+- Adatbázis: MongoDB és PostgreSQL
+- AI integráció: OpenAI API
+- Stílus: Bootstrap 5 + Tailwind CSS
+- Verziókezelés: Git + GitHub
+- Csomagkezelő: npm
+- Fejlesztői eszközök: VSCode
+
+A fejlesztés platform független, a projekt minden tagja saját környezetben dolgozik, közös GitHub repository használatával.
+A backend és frontend külön mappában helyezkednek el, de a projekt közös root könyvtárból indítható.
+
+### Fejlesztési folyamat
+
+A fejlesztés agilis módszertan szerint történik, öt sprint keretében.
+
+#### Sprint fázisok
+
+1. Sprint 1: Alap projektstruktúra, routing, felhasználói authentikáció.
+2. Sprint 2: CV generálás és PDF export implementálása.
+3. Sprint 3: CV szerkeztő és sablon funkció.
+4. Sprint 4: Motivációs levél generátor fejlesztése.
+5. Sprint 5: Tesztelés, hibajavítások, deployment
+
+### Kódolási szabványok
+
+- JavaScript ES6+ szabvány követése.
+- Komponensek vene PascalCase, függvények és változók camelCase konvencióval.
+- Minden backend endpointhoz rövid komment a működésről.
+- Hibakezelés: try/catch + központi error middleware.
+- Git commit üzenetek: Conventional Commits.
+
+### Integráció
+
+A frontend és a backend kommunikációja REST API-n keresztül történik.
+Az AI-komponens a backendből érhető el, így az API kulcsok védve maradnak.
+
+#### Adatáramlás példa (CV generálás)
+
+1. A felhasználó a React formon megadja az adatait.
+2. A frontend POST kérést küld a backend végpontjára.
+3. A backend az AI API-nak továbbítja a promptot.
+4. A válasz JSON formátumban érkezik, amit a szerver elment az adatbázisba.
+5. A frontend megjeleníti az elkészült CV-t, és felajánlja a PDF exportot.
 
 ## 10. Tesztterv
 
