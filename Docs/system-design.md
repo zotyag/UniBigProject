@@ -10,6 +10,8 @@ A cél mindkét esetben az lenne, hogy egy szép, rendezett, összeszedett és �
 
 ## 2. Üzleti folyamatok modellje
 
+![üzletiti folyamatok modellje](Images/Üzleti_folyamatok_modellje.jpg)
+
 ## 3. Követelmények
 
 ## 4. Funkcionális terv
