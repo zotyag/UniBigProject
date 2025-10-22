@@ -350,4 +350,53 @@ A hibákat több szinten kezeljük:
 
 ## 11. Telepítési terv
 
+A telepítés célja, hogy a fejlesztett webalkalmazás működőképes formában elérhetővé váljon a végfelhasználók számára, stabil és biztonságos környezetben.
+A rendszer két fő komponensből áll: a frontend (React) és a backend (Node.js / Express). A két komponens külön futtatható, de együttműködik egy közös API interfészen keresztül.
+
+### Telepítési előfeltételek
+
+| Komponens     | Előfeltétel                                                               |
+| ------------- | ------------------------------------------------------------------------- |
+| Backend       | Node.js, NPM, konfigurált `.env` fájl |
+| Frontend      | Node.js beállítás                     |
+| Adatbázis     | Létrehozott MongoDB adatbázis és felhasználói jogosultság                 |
+| AI API        | Érvényes API kulcs és megfelelő kvóta                                     |
+| Verziókezelés | Git, GitHub repository elérhetősége                                       |
+
+### Telepítési lépések
+
+#### Backend (Node.js / Express)
+
+1. GitHub repository klónozása
+2. Függőségek telepítése
+3. `.env` fájl konfigurálása
+4. Fejlesztői futtatás:
+
+    ```bash
+    npm run dev
+    ```
+
+5. Éles build futtatása
+
+    ```bash
+    npm start
+    ```
+
+#### Frontend (React)
+
+1. GitHub repository klónozása
+2. Függőségek telepítése
+3. Környezeti változók beállítása
+4. Fejlesztői futtatás:
+
+    ```bash
+    npm start
+    ```
+
+5. Éles build futtatása
+
+    ```bash
+    npm run build
+    ```
+
 ## 12. Karbantartási terv
