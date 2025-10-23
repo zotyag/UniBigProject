@@ -37,6 +37,47 @@ A cél mindkét esetben az lenne, hogy egy szép, rendezett, összeszedett és �
 
 ## 4. Funkcionális terv
 
+### Rendszerszereplők
+
+ - Admin
+ - Flehasználó
+
+### Rendszerhasználati esetek és lefutásaik
+
+ - Admin
+    - Be tud jeletkezni, mint felhasználó ezáltal látja ezen szerepkör környezetét
+    - Látja a felhasználók adatai, amivel regisztráltak, valamint amiket a mesterséges intelligenciának adott
+    - Sablonokat tudja változtatni/kicserélni
+    - Hibákat javít ha talál
+
+ - Felhasználó
+    - Regisztrálni tud és az itt megadott adatokkal be tud jelentkezni
+    - Ki tudja választani, hogy önéletrajzot vagy motivációs levelet szertne készíteni
+    - Ki tudja választani, hogy mesterséges intelligencia segítségével vagy manuálisan készíti el a bizonyos dokumentumot
+    - Megtudja adni a mesterséges intelligenciának a kért adatokat és feldolgozás után a kitöltöt dokumentumot visszaküldi sablon formában
+    - Az elkészített dokumentumokat letudja tölteni az eszközére
+
+### Menü-hierarchiák
+
+- Bejelentkezés
+    - Bejelentkezés
+    - Regisztráció
+
+- Főoldal
+    - CV készítés
+    - Motivációs levél készítés
+    - Kijelentkezés
+
+- CV készítés
+    - Mesterséges inteligenciával
+    - Manuálisan
+
+- Motivációs levél készítés
+    - Mesterséges inteligenciával
+    - Manuálisan
+
+
+
 ## 5. Fizikai környezet
 
 Az alkalmazás webes platformra készül, amely elsősorban desktop, de mobil eszközökön is elérhető lessz böngészőn keresztül. A modern, reszponzív felület biztosítja a zökkenőmentes felhasználói élményt minden eszközön.
