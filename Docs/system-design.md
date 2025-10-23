@@ -14,6 +14,27 @@ A cél mindkét esetben az lenne, hogy egy szép, rendezett, összeszedett és �
 
 ## 3. Követelmények
 
+
+### Funkcionális követelmények
+
+ - Felhasználók adatainak eltárolása
+ - Mükdöjön gépen valamint mobilon a rendszer
+ - Sablonok generálása mesterséges intelligenciával
+ - Adatok beillesztése mesterséges intelligenciával
+ - Manuális dokumentumkészítés
+ - Dokumentum lementése az eszközre
+
+### Nem funkcionális követelmények
+
+ - A felhasználó ne jusson más felhasználók adataihoz
+ - Átlátható kezelőfelület
+ - Gyors működés
+
+ ### Törvényi előírások és szabványok
+
+  - GDPR -nak való megfelelés
+  - ISMS -nek megfelelő biztonság elérése
+
 ## 4. Funkcionális terv
 
 ## 5. Fizikai környezet
