@@ -16,19 +16,21 @@ function Home() {
                 Welcome to SmartCV
             </h1>
             
-            <h2 className='text-xl md:text-2xl bg-black bg-opacity-50 p-4 rounded mt-4'>
-                Improve your existing CV or write a new one from scratch with the help of artificial intelligence
-            </h2>
-			<h3 className='text-xl md:text-2xl bg-black bg-opacity-50 p-4 rounded mt-4'>
-				You just need to answer all the questions what the AI ask, then it will send you a preview of your CV
-			</h3>
-			<div className='text-xl md:text-2xl bg-black bg-opacity-50 p-4 rounded mt-4'>
-                You can try it here
+            <div className='text-xl md:text-2xl bg-black bg-opacity-75 p-4 rounded mt-4 text-center w-11/12 max-w-2xl'>
+                <p>
+                    Improve your existing CV or write a new one from scratch with the help of artificial intelligence.
+                </p>
+                <p className="mt-4">
+                    You just need to answer all the questions what the AI ask, then it will send you a preview of your CV.
+                </p>
+                <p className="mt-4">
+                    You can try it here:
+                    <br></br>
+                    <a href="/cvgenerator" role="button" className="btn btn-primary btn-lg mt-4">
+                    Generate
+                     </a>
+                </p>
             </div>
-            
-            <a href="/cvgenerator" role="button" className="btn btn-primary btn-lg mt-4">
-                Generate
-            </a>
         </div>
     );
 }
