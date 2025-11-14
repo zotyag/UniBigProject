@@ -1,7 +1,6 @@
 {
   "name": "cv-generator-backend",
   "version": "1.0.0",
-  "type": "module",
   "description": "CV Generator API with Express.js",
   "main": "server.js",
   "scripts": {
