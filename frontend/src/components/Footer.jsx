@@ -4,7 +4,7 @@ function Footer() {
 			className='bg-gray-800 text-white text-center flex justify-center items-center'
 			style={{ height: '54px' }}
 		>
-			© {new Date().getFullYear()} MySite. All rights reserved.
+			© {new Date().getFullYear()} SmartCV. All rights reserved.
 		</footer>
 	);
 }
