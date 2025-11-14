@@ -5,6 +5,7 @@ import Footer from './components/Footer';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import CVGenerator from './pages/CVGenerator';
 
 function App() {
 	useEffect(() => {
@@ -20,6 +21,7 @@ function App() {
 						<Route path='/' element={<Home />} />
 						<Route path='/login' element={<Login />} />
 						<Route path='/register' element={<Register />} />
+						<Route path='/cvgenerator' element={<CVGenerator />} />
 					</Routes>
 				</main>
 				<Footer />

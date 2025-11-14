@@ -34,6 +34,9 @@ function AppNavbar() {
 						<Nav.Link as={Link} to='/register' className='fw-semibold fs-5 !text-white'>
 							Register
 						</Nav.Link>
+						<Nav.Link as={Link} to='/cvgenerator' className='fw-semibold fs-5 !text-white'>
+							Generator
+						</Nav.Link>
 					</Nav>
 
 					<Nav className='ms-auto'>
