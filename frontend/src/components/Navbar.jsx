@@ -19,7 +19,7 @@ function AppNavbar() {
 			style={{ minHeight: '62px' }}
 		>
 			<Container fluid>
-				<Navbar.Brand className='fw-bold fs-4'>MySite</Navbar.Brand>
+				<Navbar.Brand className='fw-bold fs-4'>Smart CV</Navbar.Brand>
 
 				<Navbar.Toggle aria-controls='main-navbar' />
 
@@ -28,11 +28,8 @@ function AppNavbar() {
 						<Nav.Link as={Link} to='/' className='fw-semibold fs-5 !text-white'>
 							Home
 						</Nav.Link>
-						<Nav.Link as={Link} to='/login' className='fw-semibold fs-5 !text-white'>
-							Login
-						</Nav.Link>
-						<Nav.Link as={Link} to='/register' className='fw-semibold fs-5 !text-white'>
-							Register
+						<Nav.Link as={Link} to='/cvgenerator' className='fw-semibold fs-5 !text-white'>
+							Generator
 						</Nav.Link>
 					</Nav>
 
