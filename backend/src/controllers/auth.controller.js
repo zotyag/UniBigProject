@@ -1,5 +1,6 @@
 // src/controllers/auth.controller.js
 import { User } from '../models/postgres/index.js';
+import { Op } from 'sequelize';
 import { generateAccessToken, generateRefreshToken, verifyToken } from '../utils/jwt.js';
 export const register = async (req, res, next) => {
     try {
