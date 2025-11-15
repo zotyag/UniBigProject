@@ -6,24 +6,29 @@ export class GeminiService {
     try {
       const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-      
-      const prompt = docType === 'cv' 
+
+      const prompt = docType === 'cv'
         ? this.createCVPrompt(userData)
         : this.createCoverLetterPrompt(userData);
-      
+
       const result = await model.generateContent(prompt);
       const response = await result.response;
       let text = response.text();
-      
+
       // Clean up markdown code blocks
-      text = text.replace(/``````\n?/g, '').trim();
-      
+      text = text
+        .replace(/```[a-zA-Z]*/g, '')  // remove ```json, ```js, etc
+        .replace(/```/g, '')           // remove remaining ```
+        .replace(/^\s*json\s*\n/i, '') // remove stray "json" line
+        .trim();
+
+
       return JSON.parse(text);
     } catch (error) {
       throw new Error(`Gemini API error: ${error.message}`);
     }
   }
-  
+
   static createCVPrompt(userData) {
     return `You are a professional CV writer. Given the following user information, create a well-structured, 
 professional CV content in JSON format. Enhance and professionally rephrase all descriptions.
@@ -80,7 +85,7 @@ Return ONLY a JSON object with the following structure:
   ]
 }`;
   }
-  
+
   static createCoverLetterPrompt(userData) {
     return `You are a professional cover letter writer. Create a compelling cover letter in JSON format.
 
