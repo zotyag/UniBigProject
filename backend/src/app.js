@@ -9,6 +9,8 @@ import authRoutes from './routes/auth.routes.js';
 import userRoutes from './routes/user.routes.js';
 import documentRoutes from './routes/document.routes.js';
 import { errorHandler, notFound } from './middleware/errorHandler.js';
+import aiChatRoutes from './routes/aiChat.routes.js';
+
 const app = express();
 // Security middleware
 app.use(helmet());
@@ -37,6 +39,7 @@ app.get('/health', (req, res) => {
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/documents', documentRoutes);
+app.use('/api/v1/chat', aiChatRoutes);
 // Root route
 app.get('/', (req, res) => {
     res.json({
@@ -54,3 +57,4 @@ app.get('/', (req, res) => {
 app.use(notFound);
 app.use(errorHandler);
 export default app;
+
