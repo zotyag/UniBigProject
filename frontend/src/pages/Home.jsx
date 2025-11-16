@@ -112,7 +112,7 @@ function Home() {
 			</div>
 
 			{/* Gemini API Key section */}
-			<div className='mt-6 text-left w-11/12 max-w-2xl bg-black bg-opacity-70 p-6 rounded'>
+			<div className='mt-6 text-left w-11/12 max-w-2xl bg-black bg-opacity-75 p-6 rounded'>
 				<h2 className='text-2xl font-semibold text-white'>Gemini API key (required for AI)</h2>
 				<p className='mt-2 text-sm text-gray-200'>
 					This site uses the Gemini API — you must provide your own API key. See the official
