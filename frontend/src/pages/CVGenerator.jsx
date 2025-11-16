@@ -1,9 +1,14 @@
 import { useEffect, useState, useRef } from 'react';
+import Preview from '../components/Preview';
+import './styles/document.css';
+import './styles/app.css';
+import MyModalComponent from '../components/MyModal.jsx';
 
 function CVGenerator() {
 	useEffect(() => {
 		document.title = 'CV Generator';
 	}, []);
+	const previewRef = useRef(null);
 
 	// --- State-ek ---
 	const [messages, setMessages] = useState([
@@ -19,6 +24,11 @@ function CVGenerator() {
 	const [isLoading, setIsLoading] = useState(false);
 
 	const messagesEndRef = useRef(null);
+
+	const [cvData, setCvData] = useState({
+        personalInfo: { name: '', email: '', phone: '' },
+        profilePictureUrl: '', summary: '', experience: [], education: []
+    });
 
 	// Automatikus görgetés
 	const scrollToBottom = () => {
@@ -125,14 +135,31 @@ function CVGenerator() {
 					</form>
 				</div>
 
-				{/* Preview */}
-				<div className='w-1/2 bg-white p-6 rounded-lg shadow-lg border border-gray-200'>
-					<h2 className='text-2xl font-bold mb-4'>Előnézet</h2>
-					<p>Itt fog megjelenni a generált CV.</p>
+				<div className='overflow-y-scroll'><main className='preview-area'>
+				 <Preview ref={previewRef} />
+            	</main>
+				<div className="flex-shrink-0 flex justify-center gap-4">
+                        <button
+                            type="button"
+                            className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 font-semibold text-sm" // 'text-sm' a kisebb mérethez
+                        >
+                            Upload
+                        </button>
+                        <button
+                            type="button"
+                            className="bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-700 font-semibold text-sm" // 'text-sm' a kisebb mérethez
+                        >
+                            Print
+                        </button>
+                    </div>
 				</div>
+							
+				<div className="p-4 border-t d-md-none">
+                <MyModalComponent />
+            	</div>
 			</div>
 		</div>
-	);
+	)
 }
 
 export default CVGenerator;

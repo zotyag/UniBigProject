@@ -6,6 +6,7 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import CVGenerator from './pages/CVGenerator';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
 	useEffect(() => {
