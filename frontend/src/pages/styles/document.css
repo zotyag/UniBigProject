@@ -1,0 +1,39 @@
+@page {
+	size: A4;
+	/* margin: 20mm; */
+	margin: 0;
+}
+.document {
+	width: 210mm;
+	height: 296.85mm; /* fix A4 magasság */
+	box-sizing: border-box;
+	padding: 15mm 20mm; /* fent/lent 15mm, jobb/bal 20mm */
+	background: white;
+	margin: 0; /* eltávolítjuk a preview margin-t PDF generáláskor */
+	box-shadow: none;
+}
+
+.document h1 {
+	font-size: 24pt;
+	margin: 0 0 8pt 0;
+	font-weight: 700;
+}
+.document h2 {
+	font-size: 14pt;
+	margin: 12pt 0 6pt 0;
+	font-weight: 600;
+}
+.document h3 {
+	font-size: 12pt;
+	margin: 10pt 0 6pt 0;
+	font-weight: 600;
+}
+.document p {
+	font-size: 11pt;
+	margin: 6pt 0;
+	line-height: 1.3;
+}
+.document ul,
+.document ol {
+	margin: 6pt 0 6pt 20pt;
+}
