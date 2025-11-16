@@ -86,8 +86,8 @@ function Home() {
 
 	return (
 		<div
-			className='h-[calc(100vh-116px)] bg-cover bg-center flex flex-col items-center justify-center text-white'
-			style={{ backgroundImage: `url(${backgroundImage})`, overflow: 'hidden' }}
+			className='min-h-[calc(100vh-116px)] py-4 bg-cover bg-center flex flex-col items-center justify-center text-white'
+			style={{ backgroundImage: `url(${backgroundImage})` }}
 		>
 			<h1 className='text-4xl md:text-6xl font-bold bg-black bg-opacity-50 p-4 rounded'>
 				Welcome to SmartCV
