@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../stores/authStore.js';
 
 function Login() {
 	useEffect(() => {
@@ -62,6 +63,27 @@ function Login() {
 
 		try {
 			// try to log in
+			const apiUrl = import.meta.env.VITE_API_BASE_URL;
+			const res = await fetch(apiUrl + '/api/v1/auth/login', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(formData),
+				credentials: 'include',
+			});
+			const data = await res.json();
+			if (res.ok) {
+				// save token + update global store so Navbar updates immediately
+				useAuthStore.getState().setToken(data.access_token);
+				if (data.user) {
+					useAuthStore.getState().setUser(data.user);
+				} else {
+					// if backend only returns token, fetch /me
+					await useAuthStore.getState().fetchCurrentUser();
+				}
+				navigate('/');
+			} else {
+				alert(data.error || 'Login failed due to server error.');
+			}
 		} catch (err) {
 			console.error('Network or parsing error:', err);
 			alert('Could not connect to the server. Please try again.');
@@ -121,6 +143,13 @@ function Login() {
 				>
 					Login
 				</button>
+				<span className='form-text mt-3 block text-center'>
+					If you don't have an account,{' '}
+					<a className='link-primary' href='/register'>
+						click here
+					</a>{' '}
+					to register.
+				</span>
 			</form>
 		</div>
 	);

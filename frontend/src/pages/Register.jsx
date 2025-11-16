@@ -93,6 +93,19 @@ function Register() {
 
 		try {
 			// try to register
+			const apiUrl = import.meta.env.VITE_API_BASE_URL;
+			const res = await fetch(apiUrl + '/api/v1/auth/register', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(formData),
+				credentials: 'include',
+			});
+			const data = await res.json();
+			if (res.ok) {
+				navigate('/login');
+			} else {
+				alert(data.error || 'Registration failed due to server error.');
+			}
 		} catch (err) {
 			console.error('Network or parsing error:', err);
 			alert('Could not connect to the server. Please try again.');
@@ -192,6 +205,13 @@ function Register() {
 				>
 					Register
 				</button>
+				<span className='form-text mt-3 block text-center'>
+					If you already have an account,{' '}
+					<a className='link-primary' href='/login'>
+						click here
+					</a>{' '}
+					to login.
+				</span>
 			</form>
 		</div>
 	);

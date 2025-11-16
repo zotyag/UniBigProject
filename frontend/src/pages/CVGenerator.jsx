@@ -26,9 +26,12 @@ function CVGenerator() {
 	const messagesEndRef = useRef(null);
 
 	const [cvData, setCvData] = useState({
-        personalInfo: { name: '', email: '', phone: '' },
-        profilePictureUrl: '', summary: '', experience: [], education: []
-    });
+		personalInfo: { name: '', email: '', phone: '' },
+		profilePictureUrl: '',
+		summary: '',
+		experience: [],
+		education: [],
+	});
 
 	// Automatikus görgetés
 	const scrollToBottom = () => {
@@ -135,31 +138,32 @@ function CVGenerator() {
 					</form>
 				</div>
 
-				<div className='overflow-y-scroll'><main className='preview-area'>
-				 <Preview ref={previewRef} />
-            	</main>
-				<div className="flex-shrink-0 flex justify-center gap-4">
-                        <button
-                            type="button"
-                            className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 font-semibold text-sm" // 'text-sm' a kisebb mérethez
-                        >
-                            Upload
-                        </button>
-                        <button
-                            type="button"
-                            className="bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-700 font-semibold text-sm" // 'text-sm' a kisebb mérethez
-                        >
-                            Print
-                        </button>
-                    </div>
+				<div className='overflow-y-scroll'>
+					<main className='preview-area'>
+						<Preview ref={previewRef} />
+					</main>
+					<div className='flex-shrink-0 flex justify-center gap-4'>
+						<button
+							type='button'
+							className='bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 font-semibold text-sm' // 'text-sm' a kisebb mérethez
+						>
+							Upload
+						</button>
+						<button
+							type='button'
+							className='bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-700 font-semibold text-sm' // 'text-sm' a kisebb mérethez
+						>
+							Print
+						</button>
+					</div>
 				</div>
-							
-				<div className="p-4 border-t d-md-none">
-                <MyModalComponent />
-            	</div>
+
+				<div className='p-4 border-t d-md-none'>
+					<MyModalComponent />
+				</div>
 			</div>
 		</div>
-	)
+	);
 }
 
 export default CVGenerator;
