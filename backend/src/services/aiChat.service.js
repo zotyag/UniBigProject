@@ -5,6 +5,7 @@ import ChatSession from '../models/mongodb/ChatSession.js';
 import { decryptAPIKey } from '../utils/encryption.js';
 
 export class AIChatService {
+    static activeChats = new Map();
     // Standard CV template
     static EMPTY_CV_TEMPLATE = {
         personal_info: {
@@ -97,6 +98,15 @@ export class AIChatService {
             next_field_to_ask: null
         });
 
+        // ✅ ADD THESE LINES - Cache the chat instance
+        const cacheKey = `${userId}-${sessionId}`;
+        this.activeChats.set(cacheKey, {
+            chat: chat,
+            lastAccessed: Date.now(),
+            userId: userId,
+            sessionId: sessionId
+        });
+
         return {
             session_id: sessionId,
             message: aiResponse,
@@ -107,9 +117,14 @@ export class AIChatService {
     }
 
     /**
-     * Continue chat conversation
-     */
+ * Continue chat conversation
+ */
     static async continueChat(userId, sessionId, userMessage, apiKey) {
+        const cacheKey = `${userId}-${sessionId}`;
+
+        // ✅ CHECK CACHE FIRST
+        let cachedChat = this.activeChats.get(cacheKey);
+
         const chatSession = await ChatSession.findOne({
             user_id: userId,
             session_id: sessionId,
@@ -119,6 +134,48 @@ export class AIChatService {
         if (!chatSession) {
             throw new Error('Chat session not found or expired');
         }
+
+        // ✅ RECREATE CHAT FROM HISTORY IF NOT IN CACHE
+        if (!cachedChat) {
+            console.log('⚠️ Chat not in cache, recreating from history for session:', sessionId);
+
+            // Limit to last 10 messages to avoid token limits
+            const recentHistory = chatSession.conversation_history.slice(-10);
+
+            const geminiHistory = recentHistory.map(msg => ({
+                role: msg.role,
+                parts: [{ text: msg.parts[0].text }]
+            }));
+
+            const genAI = new GoogleGenerativeAI(apiKey);
+            const model = genAI.getGenerativeModel({
+                model: 'gemini-2.0-flash',
+                generationConfig: {
+                    temperature: 0.7,
+                    maxOutputTokens: 1000
+                }
+            });
+
+            const chat = model.startChat({
+                history: geminiHistory,
+                generationConfig: {
+                    maxOutputTokens: 1000,
+                }
+            });
+
+            cachedChat = {
+                chat: chat,
+                lastAccessed: Date.now(),
+                userId: userId,
+                sessionId: sessionId
+            };
+            this.activeChats.set(cacheKey, cachedChat);
+        } else {
+            console.log('✅ Using cached chat for session:', sessionId);
+        }
+
+        // ✅ USE CACHED CHAT INSTANCE
+        const chat = cachedChat.chat;
 
         // Extract data from user message
         const newData = await this.extractDataFromMessage(userMessage, apiKey);
@@ -136,30 +193,6 @@ export class AIChatService {
             timestamp: new Date()
         });
 
-        // Prepare history for Gemini
-        const geminiHistory = chatSession.conversation_history.map(msg => ({
-            role: msg.role,
-            //parts: msg.parts
-            parts: [{ text: msg.parts[0].text }]  // ← Only send text, no _id or timestamp
-        }));
-
-        // Initialize Gemini chat with history
-        const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({
-            model: 'gemini-2.0-flash',
-            generationConfig: {
-                temperature: 0.7,
-                maxOutputTokens: 1000
-            }
-        });
-
-        const chat = model.startChat({
-            history: geminiHistory,
-            generationConfig: {
-                maxOutputTokens: 1000,
-            }
-        });
-
         // Determine what to ask next
         const missingFields = this.getMissingFields(chatSession.fields_collected);
         const progress = this.calculateProgress(chatSession.fields_collected);
@@ -167,12 +200,20 @@ export class AIChatService {
         let aiPrompt;
         if (missingFields.length === 0 || progress >= 80) {
             aiPrompt = `Great! I have substantial information about your ${chatSession.doc_type}. Let me acknowledge what you just shared and ask if there's anything else you'd like to add or if you're ready to finalize.`;
-            chatSession.status = 'completed';
+            
+            // ✅ DON'T set status to 'completed' yet
+            // ✅ DON'T remove from cache yet
+            //chatSession.status = 'completed';
+
+            // ✅ REMOVE FROM CACHE WHEN COMPLETED
+            //this.activeChats.delete(cacheKey);
+            //console.log('🏁 Session completed, removed from cache:', sessionId);
         } else {
             const nextField = missingFields[0];
             aiPrompt = `Acknowledge the user's previous response positively, then ${this.getFollowUpQuestion(nextField, chatSession.current_cv_data)}`;
         }
 
+        // ✅ USE CACHED CHAT TO SEND MESSAGE
         const result = await chat.sendMessage(aiPrompt);
         const aiResponse = result.response.text();
 
@@ -185,12 +226,18 @@ export class AIChatService {
 
         await chatSession.save();
 
+        // ✅ UPDATE LAST ACCESSED TIME
+        if (this.activeChats.has(cacheKey)) {
+            cachedChat.lastAccessed = Date.now();
+            this.activeChats.set(cacheKey, cachedChat);
+        }
+
         return {
             session_id: sessionId,
             message: aiResponse,
             cv_data: chatSession.current_cv_data,
             progress: progress,
-            is_complete: chatSession.status === 'completed',
+            is_complete: false,
             fields_collected: chatSession.fields_collected,
             missing_fields: missingFields
         };
@@ -278,10 +325,10 @@ Extract and return JSON now:`;
             // Clean up response
             //responseText = responseText.replace(/``````\n?/g, '').trim();
             responseText = responseText
-            .replace(/```json/gi, '')  // Remove ```
-            .replace(/```/g, '')        // Remove ```
-            .replace(/`/g, '')          // Remove remaining backticks
-            .trim();
+                .replace(/```json/gi, '')  // Remove ```
+                .replace(/```/g, '')        // Remove ```
+                .replace(/`/g, '')          // Remove remaining backticks
+                .trim();
 
             console.log('🔍 Extraction attempt for:', message.substring(0, 50) + '...');
             console.log('📝 Raw AI response:', responseText.substring(0, 200) + '...');
@@ -573,4 +620,23 @@ Be natural and conversational. Don't ask for things the user already provided.`;
             status: 'active'
         }).sort({ updated_at: -1 });
     }
+
+    static cleanupExpiredChats() {
+        const now = Date.now();
+        const expirationTime = 30 * 60 * 1000; // 30 minutes
+
+        for (const [key, data] of this.activeChats.entries()) {
+            if (now - data.lastAccessed > expirationTime) {
+                console.log('🧹 Cleaning up expired chat session:', key);
+                this.activeChats.delete(key);
+            }
+        }
+
+        console.log(`📊 Active chats in cache: ${this.activeChats.size}`);
+    }
+
 }
+
+setInterval(() => {
+    AIChatService.cleanupExpiredChats();
+}, 10 * 60 * 1000);
