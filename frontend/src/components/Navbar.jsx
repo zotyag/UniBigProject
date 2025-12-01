@@ -46,6 +46,9 @@ function AppNavbar() {
 						<Nav.Link as={Link} to='/' className='fw-semibold fs-5 !text-white'>
 							Home
 						</Nav.Link>
+						<Nav.Link as={Link} to='/profile' className='fw-semibold fs-5 !text-white'>
+							Profile
+						</Nav.Link>
 						<Nav.Link as={Link} to='/cvgenerator' className='fw-semibold fs-5 !text-white'>
 							Generator
 						</Nav.Link>
