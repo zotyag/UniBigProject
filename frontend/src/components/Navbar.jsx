@@ -52,6 +52,9 @@ function AppNavbar() {
 						<Nav.Link as={Link} to='/cvgenerator' className='fw-semibold fs-5 !text-white'>
 							Generator
 						</Nav.Link>
+						<Nav.Link as={Link} to='/cvbuilder' className='fw-semibold fs-5 !text-white'>
+							ManualCVBuilder
+						</Nav.Link>
 					</Nav>
 
 					<Nav className='ms-auto'>

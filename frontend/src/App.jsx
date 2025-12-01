@@ -4,6 +4,7 @@ import AppNavbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
 import Profile from './pages/Profile';
+import ManualCVBuilder from './pages/ManualCVBuilder';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import CVGenerator from './pages/CVGenerator';
@@ -25,6 +26,7 @@ function App() {
 						<Route path='/login' element={<Login />} />
 						<Route path='/register' element={<Register />} />
 						<Route path='/cvgenerator' element={<CVGenerator />} />
+						<Route path='/cvbuilder' element={<ManualCVBuilder />} />
 					</Routes>
 				</main>
 				<Footer />
