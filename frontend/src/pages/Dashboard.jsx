@@ -31,12 +31,22 @@ const Dashboard = () => {
 		queryFn: () => fetchDocuments(),
 	});
 
+	// const fetchDocMutation = useMutation({
+	// 	mutationFn: fetchDocumentById,
+	// 	onSuccess: (data) => {
+	// 		const cvData = extractCvData(data);
+	// 		console.log('Megnyitott CV adatok:', cvData);
+	// 		setSelectedDoc({ ...data, cvData });
+	// 		setShowPreview(true);
+	// 	},
+	// 	onError: () => alert('Nem sikerült betölteni a dokumentumot.'),
+	// });
 	const fetchDocMutation = useMutation({
 		mutationFn: fetchDocumentById,
 		onSuccess: (data) => {
-			const cvData = extractCvData(data);
-			console.log('Megnyitott CV adatok:', cvData);
-			setSelectedDoc({ ...data, cvData });
+			// Az api.js már megcsinálta a cvData-t, itt már készen kapjuk!
+			console.log('Betöltött dokumentum (normalizálva):', data);
+			setSelectedDoc(data); // A data már tartalmazza a .cvData mezőt
 			setShowPreview(true);
 		},
 		onError: () => alert('Nem sikerült betölteni a dokumentumot.'),

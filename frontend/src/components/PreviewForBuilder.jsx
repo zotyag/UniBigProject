@@ -1,24 +1,27 @@
 import React, { forwardRef } from 'react';
 
 const Preview = forwardRef(({ data = {} }, ref) => {
-	// Alapértelmezett struktúra a MongoDB JSON alapján
-	const { profile = {}, contact = {}, experience = [], education = [], skills = [] } = data || {};
+	const {
+		personal_info = {},
+		summary = '',
+		education = [],
+		experience = [],
+		skills = {},
+	} = data || {};
 
-	// Segédfüggvény a dátumokhoz
-	const formatDate = (date) => date || '';
-
-	// PDF-biztos stílusok
 	const cellStyle = {
-		padding: '8px',
+		padding: '4px',
 		verticalAlign: 'top',
 		border: '1px solid #9ca3af',
 		wordBreak: 'break-word',
 	};
+	const listStyle = { margin: 0, paddingLeft: '15px', listStyleType: 'disc' };
 
-	// JAVÍTÁS: Ellenőrizzük, hogy van-e TÉNYLEGES skill adat
+	// Segédfüggvény: Van-e bármilyen skill?
 	const hasAnySkill =
-		Array.isArray(skills) &&
-		skills.some((group) => Array.isArray(group.items) && group.items.length > 0);
+		(skills.core_competencies && skills.core_competencies.length > 0) ||
+		(skills.software_proficiency && skills.software_proficiency.length > 0) ||
+		(skills.language_fluency && skills.language_fluency.length > 0);
 
 	return (
 		<div
@@ -32,21 +35,23 @@ const Preview = forwardRef(({ data = {} }, ref) => {
 				lineHeight: '1.5',
 			}}
 		>
-			{/* --- 1. HEADER (Profile + Contact) --- */}
+			{/* HEADER (personal_info) - Változatlan */}
 			<div className='flex justify-between items-start mb-6 border-b-2 border-black pb-4'>
 				<div className='flex-1'>
-					<h1 className='text-3xl font-bold uppercase mb-1'>{profile.name || 'Név'}</h1>
-					<p className='text-xl text-gray-600 mb-3'>{profile.title || 'Pozíció'}</p>
+					<h1 className='text-3xl font-bold uppercase mb-1'>
+						{personal_info.full_name || 'Név'}
+					</h1>
+					<p className='text-xl text-gray-600 mb-3'>{personal_info.title || 'Pozíció'}</p>
 
 					<div className='text-sm leading-relaxed text-gray-700'>
 						<div className='flex flex-wrap gap-x-4'>
-							{contact.email && <span>📧 {contact.email}</span>}
-							{contact.phone && <span>📱 {contact.phone}</span>}
-							{contact.location && <span>📍 {contact.location}</span>}
+							{personal_info.email && <span>📧 {personal_info.email}</span>}
+							{personal_info.phone && <span>📱 {personal_info.phone}</span>}
+							{personal_info.location && <span>📍 {personal_info.location}</span>}
 						</div>
 						<div className='flex flex-wrap gap-x-4 mt-1'>
-							{contact.linkedin && <span>🔗 {contact.linkedin}</span>}
-							{contact.website && <span>🌐 {contact.website}</span>}
+							{personal_info.linkedin && <span>🔗 {personal_info.linkedin}</span>}
+							{personal_info.website && <span>🌐 {personal_info.website}</span>}
 						</div>
 					</div>
 				</div>
@@ -64,17 +69,17 @@ const Preview = forwardRef(({ data = {} }, ref) => {
 				)}
 			</div>
 
-			{/* --- 2. SUMMARY (Profile) --- */}
-			{profile.summary && (
+			{/* SUMMARY - Változatlan */}
+			{summary && (
 				<div className='mb-6'>
 					<h2 className='text-lg font-bold uppercase mb-2 border-b border-gray-300 pb-1'>
 						Röviden magamról
 					</h2>
-					<p className='text-justify whitespace-pre-line text-sm'>{profile.summary}</p>
+					<p className='text-justify whitespace-pre-line text-sm'>{summary}</p>
 				</div>
 			)}
 
-			{/* --- 3. EDUCATION --- */}
+			{/* EDUCATION - Dátum javítva! */}
 			{education.length > 0 && (
 				<div className='mb-6'>
 					<h2 className='text-lg font-bold uppercase mb-2 border-b border-gray-300 pb-1'>
@@ -92,15 +97,18 @@ const Preview = forwardRef(({ data = {} }, ref) => {
 						<tbody>
 							{education.map((edu, idx) => (
 								<tr key={idx}>
-									<td style={cellStyle} className='bg-gray-5'>
+									<td style={cellStyle} className='bg-gray-50'>
 										<div className='font-bold'>{edu.institution}</div>
 										<div className='text-xs text-gray-600 mt-1'>
-											{formatDate(edu.startDate)} - {formatDate(edu.endDate)}
+											{/* JAVÍTÁS: Kezeli a startDate/endDate párost és a graduation_date-et is */}
+											{edu.startDate && edu.endDate
+												? `${edu.startDate} - ${edu.endDate}`
+												: edu.graduation_date || ''}
 										</div>
 									</td>
 									<td style={cellStyle}>
 										<div className='font-bold'>{edu.degree}</div>
-										<div className='text-gray-700'>{edu.field}</div>
+										<div className='text-gray-700'>{edu.field || edu.field_of_study}</div>
 										{edu.description && (
 											<div className='text-xs text-gray-500 mt-1'>{edu.description}</div>
 										)}
@@ -112,7 +120,7 @@ const Preview = forwardRef(({ data = {} }, ref) => {
 				</div>
 			)}
 
-			{/* --- 4. EXPERIENCE --- */}
+			{/* EXPERIENCE - Leírás javítva! */}
 			{experience.length > 0 && (
 				<div className='mb-6'>
 					<h2 className='text-lg font-bold uppercase mb-2 border-b border-gray-300 pb-1'>
@@ -131,15 +139,19 @@ const Preview = forwardRef(({ data = {} }, ref) => {
 									<td style={cellStyle} className='bg-gray-50'>
 										<div className='font-bold'>{exp.company}</div>
 										<div className='text-xs text-gray-600 mt-1'>
-											{formatDate(exp.startDate)} -{' '}
-											{formatDate(exp.endDate || 'Jelenleg')}
+											{exp.start_date || exp.startDate} -{' '}
+											{exp.end_date || exp.endDate || 'Jelenleg'}
 										</div>
 										<div className='text-xs text-gray-500 mt-1 italic'>
 											{exp.location}
 										</div>
 									</td>
 									<td style={cellStyle}>
-										<div className='font-bold mb-1 text-primary-700'>{exp.position}</div>
+										<div className='font-bold mb-1 text-primary-700'>
+											{exp.position || exp.title}
+										</div>
+
+										{/* JAVÍTÁS: Csak a leírás szövegét jelenítjük meg, sortöréssel */}
 										<div className='whitespace-pre-line text-gray-700'>
 											{exp.description || '-'}
 										</div>
@@ -151,29 +163,45 @@ const Preview = forwardRef(({ data = {} }, ref) => {
 				</div>
 			)}
 
-			{/* --- 5. SKILLS (Tömb alapú - JAVÍTOTT MEGJELENÍTÉS) --- */}
-			{/* Csak akkor rendereljük a szekciót, ha van benne valami */}
+			{/* SKILLS - Változatlan */}
 			{hasAnySkill && (
 				<div className='mb-6'>
 					<h2 className='text-lg font-bold uppercase mb-2 border-b border-gray-300 pb-1'>
 						Készségek
 					</h2>
 					<div className='grid grid-cols-2 gap-4'>
-						{skills.map((skillGroup, idx) => {
-							// Csak azokat a kategóriákat írjuk ki, ahol van elem
-							if (!Array.isArray(skillGroup.items) || skillGroup.items.length === 0) {
-								return null;
-							}
+						{skills.core_competencies?.length > 0 && (
+							<div className='mb-2'>
+								<h3 className='font-bold text-sm text-gray-800 border-b border-gray-200 mb-1'>
+									Kompetenciák
+								</h3>
+								<p className='text-sm leading-relaxed'>
+									{skills.core_competencies.join(' • ')}
+								</p>
+							</div>
+						)}
 
-							return (
-								<div key={idx} className='mb-2'>
-									<h3 className='font-bold text-sm text-gray-800 border-b border-gray-200 mb-1'>
-										{skillGroup.category}
-									</h3>
-									<p className='text-sm leading-relaxed'>{skillGroup.items.join(' • ')}</p>
-								</div>
-							);
-						})}
+						{skills.software_proficiency?.length > 0 && (
+							<div className='mb-2'>
+								<h3 className='font-bold text-sm text-gray-800 border-b border-gray-200 mb-1'>
+									Szoftverek
+								</h3>
+								<p className='text-sm leading-relaxed'>
+									{skills.software_proficiency.join(' • ')}
+								</p>
+							</div>
+						)}
+
+						{skills.language_fluency?.length > 0 && (
+							<div className='mb-2'>
+								<h3 className='font-bold text-sm text-gray-800 border-b border-gray-200 mb-1'>
+									Nyelvek
+								</h3>
+								<p className='text-sm leading-relaxed'>
+									{skills.language_fluency.join(' • ')}
+								</p>
+							</div>
+						)}
 					</div>
 				</div>
 			)}

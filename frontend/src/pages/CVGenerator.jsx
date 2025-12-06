@@ -1,11 +1,12 @@
 import { useEffect, useState, useRef } from 'react';
-import Preview from '../components/Preview';
-import './styles/document.css';
-import './styles/app.css';
-import Modal from 'react-bootstrap/Modal';
-import Button from 'react-bootstrap/Button';
+import { useMutation } from '@tanstack/react-query';
+import { startChatSession, sendChatMessage, finalizeChatSession } from '../api';
+import Preview from '../components/PreviewForBuilder'; // Fontos: A jó preview-t használjuk
+import { Modal, Button } from 'react-bootstrap';
 import { useAuthStore } from '../stores/authStore.js';
 import ReactMarkdown from 'react-markdown';
+import './styles/document.css';
+import './styles/app.css';
 
 const API_BASE_URL = 'http://localhost:3000/api/v1';
 
@@ -15,7 +16,6 @@ function CVGenerator() {
 	}, []);
 	const previewRef = useRef(null);
 
-	// --- STATE ---
 	const accessToken = useAuthStore((state) => state.token);
 	const [sessionId, setSessionId] = useState(null);
 	const [messages, setMessages] = useState([]);
@@ -23,10 +23,14 @@ function CVGenerator() {
 	const [isLoading, setIsLoading] = useState(false);
 	const messagesEndRef = useRef(null);
 
+	const [showPreviewModal, setShowPreviewModal] = useState(false);
+	const openPreview = () => setShowPreviewModal(true);
+	const closePreview = () => setShowPreviewModal(false);
+
+	// Kezdeti State - Preview kompatibilis szerkezet (skills = tömb!)
 	const [cvData, setCvData] = useState({
 		personal_info: {
-			// <--- snake_case
-			full_name: '', // <--- full_name
+			full_name: '',
 			email: '',
 			phone: '',
 			title: '',
@@ -34,27 +38,20 @@ function CVGenerator() {
 			website: '',
 			location: '',
 		},
-		profilePictureUrl: '', // This might be a separate field
+		profilePictureUrl: '',
 		summary: '',
 		experience: [],
 		education: [],
-		skills: {
-			core_competencies: [],
-			software_proficiency: [],
-			language_fluency: [],
-			certifications: [],
-		},
+		skills: [
+			{ category: 'Core Competencies', items: [] },
+			{ category: 'Software Proficiency', items: [] },
+			{ category: 'Languages', items: [] },
+		],
 		key_projects_achievements: [],
 		awards_and_recognitions: [],
 	});
+
 	const [progress, setProgress] = useState(0);
-
-	// Mobile preview modal
-	const [showPreviewModal, setShowPreviewModal] = useState(false);
-	const openPreview = () => setShowPreviewModal(true);
-	const closePreview = () => setShowPreviewModal(false);
-
-	// This will be set to true by the API when all sections are filled
 	const [isComplete, setIsComplete] = useState(false);
 
 	// Auto scroll
@@ -62,21 +59,57 @@ function CVGenerator() {
 		messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
 	}, [messages]);
 
-	useEffect(() => {
-		// Don't do anything if we don't have a token
-		if (!accessToken) {
-			console.log('No access token, waiting for login.');
-			return;
+	// --- ADAT NORMALIZÁLÓ (AI Objektum -> Preview Tömb) ---
+	const updateCvDataFromAI = (aiResponseData) => {
+		if (!aiResponseData) return;
+
+		let newSkills = [];
+
+		// 1. SKILLS KONVERZIÓ: Objektum -> Tömb
+		// Ha az AI objektumként küldi (ami a JSON példádban látszik)
+		if (aiResponseData.skills && !Array.isArray(aiResponseData.skills)) {
+			const s = aiResponseData.skills;
+			newSkills = [
+				{
+					category: 'Core Competencies',
+					items: Array.isArray(s.core_competencies) ? s.core_competencies : [],
+				},
+				{
+					category: 'Software Proficiency',
+					items: Array.isArray(s.software_proficiency) ? s.software_proficiency : [],
+				},
+				{
+					category: 'Languages', // A Preview 'Languages'-t vár, az AI 'language_fluency'-t küld
+					items: Array.isArray(s.language_fluency) ? s.language_fluency : [],
+				},
+				// Opcionális: Certifications, ha a Preview kezeli
+				// { category: 'Certifications', items: s.certifications || [] }
+			];
 		}
+		// Ha véletlenül már tömbként jönne (biztonsági háló)
+		else if (Array.isArray(aiResponseData.skills)) {
+			newSkills = aiResponseData.skills;
+		}
+
+		// 2. EXPERIENCE KONVERZIÓ (Ha szükséges mezőnév csere)
+		// Az AI JSON: title, company, start_date... (ez elvileg jó a Preview-nak)
+		// De ha eltérne, itt lehetne map-elni.
+
+		// 3. STATE FRISSÍTÉS
+		setCvData((prev) => ({
+			...prev,
+			...aiResponseData, // Átírjuk az alap mezőket (personal_info, summary, education, experience)
+			skills: newSkills.length > 0 ? newSkills : prev.skills, // A konvertált skilleket mentjük
+		}));
+	};
+
+	useEffect(() => {
+		if (!accessToken) return;
 
 		const startChatSession = async () => {
 			setIsLoading(true);
 			try {
-				// This is the user's *first* message.
-				// You might want to make this dynamic, but for now, we'll hardcode a "hi"
 				const firstMessage = "Hi, I'd like to build a CV.";
-				// const firstMessage = "Hi, I'd like to build a cover letter.";  // !-- this option does not work yet --
-
 				const response = await fetch(`${API_BASE_URL}/chat/start`, {
 					method: 'POST',
 					headers: {
@@ -86,54 +119,36 @@ function CVGenerator() {
 					body: JSON.stringify({
 						initial_message: firstMessage,
 						doc_type: 'cv',
-						// doc_type: 'cover_letter', // !-- this option does not work yet --
 					}),
 				});
 
-				if (!response.ok) {
-					const errorData = await response.json();
-					throw new Error(errorData.error || 'Failed to start chat');
-				}
-
+				if (!response.ok) throw new Error('Failed to start chat');
 				const data = await response.json();
-
-				// --- SET ALL OUR INITIAL STATE FROM THE API ---
 				setSessionId(data.session_id);
-				setCvData(data.cv_data);
+
+				// ADAT FRISSÍTÉS
+				if (data.cv_data) updateCvDataFromAI(data.cv_data);
+
 				setProgress(data.progress);
 				setIsComplete(data.is_complete);
-
-				// Set the AI's first message
 				setMessages([
-					{
-						id: Date.now(),
-						text: data.message, // This is the real AI first message
-						sender: 'bot',
-					},
+					{ id: Date.now(), text: data.message || 'Szia! Kezdhetjük.', sender: 'bot' },
 				]);
 			} catch (error) {
 				console.error('Error starting chat session:', error);
-				setMessages([
-					{
-						id: Date.now(),
-						text: `Hiba indításkor: ${error.message}. Kérlek frissítsd az oldalt.`,
-						sender: 'bot',
-					},
-				]);
+				setMessages([{ id: Date.now(), text: `Hiba: ${error.message}`, sender: 'bot' }]);
 			} finally {
 				setIsLoading(false);
 			}
 		};
 
 		startChatSession();
-	}, [accessToken]); // This effect depends on the accessToken
+	}, [accessToken]);
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		const userInput = currentMessage.trim();
-		if (!userInput || isLoading || !sessionId) {
-			return;
-		}
+		if (!userInput || isLoading || !sessionId) return;
 
 		const userMessage = { id: Date.now(), text: userInput, sender: 'user' };
 		setMessages((prev) => [...prev, userMessage]);
@@ -143,40 +158,28 @@ function CVGenerator() {
 		try {
 			const response = await fetch(`${API_BASE_URL}/chat/message`, {
 				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					Authorization: `Bearer ${accessToken}`,
-				},
-				body: JSON.stringify({
-					session_id: sessionId,
-					message: userInput,
-				}),
+				headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+				body: JSON.stringify({ session_id: sessionId, message: userInput }),
 			});
 
-			if (!response.ok) {
-				const errorData = await response.json();
-				throw new Error(errorData.error || 'API call failed');
-			}
-
+			if (!response.ok) throw new Error('API call failed');
 			const data = await response.json();
 
 			const botMessage = {
 				id: Date.now() + 1,
-				text: data.message,
+				text: data.message || 'Adatok frissítve!',
 				sender: 'bot',
 			};
 			setMessages((prev) => [...prev, botMessage]);
 
-			setCvData(data.cv_data);
+			// ADAT FRISSÍTÉS MINDEN ÜZENETNÉL
+			if (data.cv_data) updateCvDataFromAI(data.cv_data);
+
 			setProgress(data.progress);
 			setIsComplete(data.is_complete);
 		} catch (error) {
 			console.error('Error sending message:', error);
-			const errorMessage = {
-				id: Date.now() + 1,
-				text: `Hoppá, hiba történt: ${error.message}`,
-				sender: 'bot',
-			};
+			const errorMessage = { id: Date.now() + 1, text: `Hiba: ${error.message}`, sender: 'bot' };
 			setMessages((prev) => [...prev, errorMessage]);
 		} finally {
 			setIsLoading(false);
@@ -186,55 +189,33 @@ function CVGenerator() {
 	const handleFinalize = async () => {
 		if (!sessionId) return;
 		setIsLoading(true);
-
 		try {
-			// We can get the title from the user later, for now, use a default
-			// const title = cvData.personalInfo.name
-			// 	? `${cvData.personalInfo.name} - CV`
-			// 	: 'My Professional CV';
-			const title = cvData.personal_info.title
-				? `${cvData.personal_info.title} - CV`
+			const title = cvData.personal_info.full_name
+				? `${cvData.personal_info.full_name} - CV`
 				: 'My Professional CV';
-
 			const response = await fetch(`${API_BASE_URL}/chat/session/${sessionId}/finalize`, {
 				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					Authorization: `Bearer ${accessToken}`,
-				},
-				body: JSON.stringify({
-					title: title,
-					template_code: 'default',
-				}),
+				headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+				// Itt is figyelni kell: a backendnek lehet, hogy konvertálni kell vissza objektummá,
+				// vagy a backend elfogadja a tömböt is.
+				// A legegyszerűbb, ha a már konvertált cvData-t küldjük, ha a backend rugalmas (MongoDB).
+				body: JSON.stringify({ title: title, template_code: 'default' }),
 			});
-
-			if (!response.ok) {
-				const errorData = await response.json();
-				throw new Error(errorData.error || 'Failed to finalize session');
-			}
-
+			if (!response.ok) throw new Error('Failed to finalize session');
 			const data = await response.json();
-
-			console.log('Finalize response:', data);
-
-			// Add a success message to the chat
-			const successMessage = {
-				id: Date.now() + 1,
-				text: `Szuper! A CV-d elmentve. Dokumentum ID: ${data.document.id}. Most már bezárhatod ezt az ablakot.`,
-				sender: 'bot',
-			};
-			setMessages((prev) => [...prev, successMessage]);
-
-			// In a real app, you would redirect:
-			// window.location.href = `/documents/${data.document.id}`;
+			setMessages((prev) => [
+				...prev,
+				{
+					id: Date.now() + 1,
+					text: `Szuper! A CV-d elmentve. ID: ${data.document.id}.`,
+					sender: 'bot',
+				},
+			]);
 		} catch (error) {
-			console.error('Error finalizing session:', error);
-			const errorMessage = {
-				id: Date.now() + 1,
-				text: `Hoppá, hiba történt a mentéskor: ${error.message}`,
-				sender: 'bot',
-			};
-			setMessages((prev) => [...prev, errorMessage]);
+			setMessages((prev) => [
+				...prev,
+				{ id: Date.now() + 1, text: `Hiba a mentéskor: ${error.message}`, sender: 'bot' },
+			]);
 		} finally {
 			setIsLoading(false);
 		}
@@ -242,9 +223,7 @@ function CVGenerator() {
 
 	return (
 		<div>
-			{/* Layout: chat grows, preview fixed (A4) on lg+; preview hidden on small/medium */}
 			<div className='flex flex-row w-full h-[calc(100vh-116px)] p-4 gap-4 bg-gray-100'>
-				{/* Chat: flexible */}
 				<div className='flex-1 min-w-0 bg-white rounded-lg shadow-lg flex flex-col overflow-hidden'>
 					<form noValidate className='flex flex-col h-full' onSubmit={handleSubmit}>
 						<div className='flex-1 overflow-y-auto p-6 space-y-3 bg-gray-50'>
@@ -262,64 +241,49 @@ function CVGenerator() {
 												: 'bg-white text-gray-800 shadow-sm'
 										}`}
 									>
-										<ReactMarkdown
-											components={{
-												// Bekezdések közötti térköz
-												p: ({node, ...props}) => <p className="mb-2 last:mb-0" {...props} />,
-												// Pöttyös lista formázása
-												ul: ({node, ...props}) => <ul className="list-disc ml-5 mb-2" {...props} />,
-												// Számozott lista formázása
-												ol: ({node, ...props}) => <ol className="list-decimal ml-5 mb-2" {...props} />,
-												// Lista elemek
-												li: ({node, ...props}) => <li className="pl-1" {...props} />,
-												// Félkövér szöveg
-												strong: ({node, ...props}) => <strong className="font-bold" {...props} />,
-											}}
-										>
-											{msg.text}
-										</ReactMarkdown>
+										<ReactMarkdown>{msg.text}</ReactMarkdown>
 									</div>
 								</div>
 							))}
+							{isLoading && (
+								<div className='flex justify-start'>
+									<div className='bg-gray-200 text-gray-500 py-2 px-4 rounded-lg text-sm italic animate-pulse'>
+										Gondolkodom...
+									</div>
+								</div>
+							)}
 							<div ref={messagesEndRef} />
 						</div>
 
-						{/* Bottom input */}
 						<div className='p-4 border-t bg-white flex gap-2 flex-shrink-0'>
 							<input
 								type='text'
-								name='input'
-								required
-								id='user_input'
 								className='border p-2 rounded flex-1 form-control'
 								placeholder={isLoading ? 'AI gondolkodik...' : 'Írj üzenetet...'}
 								value={currentMessage}
 								onChange={(e) => setCurrentMessage(e.target.value)}
 								disabled={isLoading}
+								autoFocus
 							/>
 							<button
 								type='submit'
 								className='bg-blue-600 text-white p-2 rounded hover:bg-blue-700 disabled:bg-blue-300'
-								disabled={isLoading}
+								disabled={isLoading || !sessionId}
 							>
-								{isLoading ? 'Küldés...' : 'Send'}
+								Send
 							</button>
 							<button
 								type='button'
 								className='bg-green-600 text-white p-2 rounded hover:bg-green-700 disabled:bg-green-300'
-								disabled={isLoading || !sessionId} // Also disable when loading or no session
+								disabled={isLoading || !sessionId}
 								onClick={handleFinalize}
 							>
-								{/* Kept text short to fit */}
-								{isLoading ? 'Mentés...' : 'Finalize'}
+								Finalize
 							</button>
-
-							{/* Preview button visible only on small and medium (hidden on lg+) */}
 							<Button
 								variant='secondary'
 								className='ml-2 block lg:hidden'
 								onClick={openPreview}
-								aria-label='Open preview'
 							>
 								Preview
 							</Button>
@@ -327,7 +291,6 @@ function CVGenerator() {
 					</form>
 				</div>
 
-				{/* Preview column - visible on large screens and up; fixed A4 width, won't shrink */}
 				<div
 					className='hidden lg:block'
 					style={{ flex: '0 0 210mm', width: '210mm', maxWidth: '210mm', overflow: 'auto' }}
@@ -338,7 +301,6 @@ function CVGenerator() {
 				</div>
 			</div>
 
-			{/* Modal preview for small/medium screens */}
 			<Modal
 				show={showPreviewModal}
 				onHide={closePreview}
