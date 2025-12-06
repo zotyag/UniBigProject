@@ -27,7 +27,7 @@ function App() {
 						<Route path='/login' element={<Login />} />
 						<Route path='/register' element={<Register />} />
 						<Route path='/cvgenerator' element={<CVGenerator />} />
-						<Route path='/cvbuilder' element={<ManualCVBuilder />} />
+						<Route path='/cvbuilder/:id?' element={<ManualCVBuilder />} />
 						<Route path='/dashboard' element={<Dashboard />} />
 					</Routes>
 				</main>

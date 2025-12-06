@@ -2,13 +2,7 @@ import React, { forwardRef } from 'react';
 
 const Preview = forwardRef(({ data = {} }, ref) => {
 	// Alapértelmezett struktúra a MongoDB JSON alapján
-	const {
-		profile = {},
-		contact = {},
-		experience = [],
-		education = [],
-		skills = [], // Ez most már TÖMB, nem objektum!
-	} = data || {};
+	const { profile = {}, contact = {}, experience = [], education = [], skills = [] } = data || {};
 
 	// Segédfüggvény a dátumokhoz
 	const formatDate = (date) => date || '';

@@ -130,17 +130,27 @@ const Dashboard = () => {
 										<div className='mt-auto text-muted small mb-3'>
 											Frissítve: {formatDate(doc.updated_at)}
 										</div>
-										<Button
-											variant='outline-secondary'
-											className='w-100 mt-auto'
-											onClick={() => handleOpenPreview(doc.id)}
-											disabled={fetchDocMutation.isPending}
-										>
-											{fetchDocMutation.isPending &&
-											fetchDocMutation.variables === doc.id
-												? 'Betöltés...'
-												: 'Megtekintés'}
-										</Button>
+										<div className='mt-auto d-flex gap-2'>
+											{/* SZERKESZTÉS GOMB */}
+											<Button
+												variant='primary'
+												className='flex-fill btn-sm'
+												onClick={() => navigate(`/cvbuilder/${doc.id}`)} // <--- Ez visz át a szerkesztőbe!
+											>
+												Szerkesztés
+											</Button>
+											<Button
+												variant='outline-secondary'
+												className='w-100 mt-auto'
+												onClick={() => handleOpenPreview(doc.id)}
+												disabled={fetchDocMutation.isPending}
+											>
+												{fetchDocMutation.isPending &&
+												fetchDocMutation.variables === doc.id
+													? 'Betöltés...'
+													: 'Megtekintés'}
+											</Button>
+										</div>
 									</Card.Body>
 								</Card>
 							</Col>

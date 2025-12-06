@@ -177,3 +177,18 @@ export const createDocument = async ({ title, cvData }) => {
 export const fetchDocumentById = async (id) => {
 	return apiFetch(`/documents/${id}`);
 };
+
+// Dokumentum frissítése
+// Endpoint: PUT /documents/:id
+export const updateDocument = async ({ id, title, cvData }) => {
+	return apiFetch(`/documents/${id}`, {
+		method: 'PUT',
+		body: JSON.stringify({
+			title: title,
+			// A dokumentáció szerint 'content_json' a mező neve frissítésnél
+			// De a biztonság kedvéért küldjük 'user_data'-ként is, hátha a backend azt figyeli
+			content_json: cvData,
+			user_data: cvData,
+		}),
+	});
+};

@@ -1,30 +1,21 @@
-import { useState, useRef } from 'react';
-import { Accordion, Form, Button, Card, Modal } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { createDocument } from '../api';
+import { useState, useRef, useEffect } from 'react';
+import { Accordion, Form, Button, Card, Modal, Spinner } from 'react-bootstrap';
+import { useNavigate, useParams } from 'react-router-dom'; // useParams kell!
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { createDocument, updateDocument, fetchDocumentById } from '../api'; // updateDocument kell!
 import Preview from '../components/PreviewForBuilder';
 import { useReactToPrint } from 'react-to-print';
 
 const ManualCVBuilder = () => {
+	const { id } = useParams(); // URL paraméter (ha van)
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
 	const previewRef = useRef(null);
 
-	// --- STATE (MongoDB Sémára igazítva) ---
+	// --- STATE ---
 	const [cvData, setCvData] = useState({
-		profile: {
-			name: '',
-			title: '',
-			summary: '',
-		},
-		contact: {
-			email: '',
-			phone: '',
-			location: '',
-			linkedin: '',
-			website: '',
-		},
+		profile: { name: '', title: '', summary: '' },
+		contact: { email: '', phone: '', location: '', linkedin: '', website: '' },
 		profilePictureUrl: null,
 		experience: [],
 		education: [],
@@ -38,6 +29,33 @@ const ManualCVBuilder = () => {
 	const [showSaveModal, setShowSaveModal] = useState(false);
 	const [docTitle, setDocTitle] = useState('');
 
+	// --- 1. ADATOK BETÖLTÉSE (CSAK SZERKESZTÉSKOR) ---
+	const { data: existingDoc, isLoading: isLoadingDoc } = useQuery({
+		queryKey: ['document', id],
+		queryFn: () => fetchDocumentById(id),
+		enabled: !!id, // Csak akkor fusson, ha van ID az URL-ben
+	});
+
+	// Ha megérkeztek az adatok, töltsük be a state-be
+	useEffect(() => {
+		if (existingDoc) {
+			// Adatkinyerés (kompatibilitás miatt többet is megnézünk)
+			const content =
+				existingDoc.content_json || existingDoc.user_data || existingDoc.content || {};
+
+			// 1. Cím beállítása
+			setDocTitle(existingDoc.title || '');
+
+			// 2. CV Adatok beállítása (összefésüljük az alapértelmezettel, hogy ne legyen undefined hiba)
+			setCvData((prev) => ({
+				...prev,
+				...content,
+				// A skills-nél biztosítani kell, hogy meglegyenek a kategóriák, ha esetleg hiányoznának
+				skills: content.skills || prev.skills,
+			}));
+		}
+	}, [existingDoc]);
+
 	// --- PDF ---
 	const handlePrint = useReactToPrint({
 		contentRef: previewRef,
@@ -45,12 +63,14 @@ const ManualCVBuilder = () => {
 		pageStyle: `@page { size: A4; margin: 0; } @media print { body { -webkit-print-color-adjust: exact; } }`,
 	});
 
-	// --- MENTÉS ---
+	// --- MENTÉS (LÉTREHOZÁS VAGY FRISSÍTÉS) ---
 	const saveMutation = useMutation({
-		mutationFn: createDocument,
+		// Döntés: Ha van ID -> Update, ha nincs -> Create
+		mutationFn: (data) => (id ? updateDocument({ id, ...data }) : createDocument(data)),
+
 		onSuccess: () => {
 			queryClient.invalidateQueries(['documents']);
-			alert('Sikeres mentés!');
+			alert(id ? 'Sikeres frissítés!' : 'Sikeres mentés!');
 			navigate('/dashboard');
 		},
 		onError: (err) => alert('Hiba a mentéskor: ' + err.message),
@@ -62,32 +82,23 @@ const ManualCVBuilder = () => {
 		setShowSaveModal(false);
 	};
 
-	// --- KEZELŐK ---
-
-	// Profile és Contact kezelése
+	// --- KEZELŐK (Változatlanok) ---
 	const handleNestedChange = (section, field, value) => {
-		setCvData((prev) => ({
-			...prev,
-			[section]: { ...prev[section], [field]: value },
-		}));
+		setCvData((prev) => ({ ...prev, [section]: { ...prev[section], [field]: value } }));
 	};
 
-	// Kép feltöltés (Base64)
 	const handleImageUpload = (e) => {
 		const file = e.target.files[0];
 		if (file) {
 			const reader = new FileReader();
-			reader.onloadend = () => {
+			reader.onloadend = () =>
 				setCvData((prev) => ({ ...prev, profilePictureUrl: reader.result }));
-			};
 			reader.readAsDataURL(file);
 		}
 	};
 
-	// Listák (Exp, Edu) kezelése
-	const addItem = (section, template) => {
+	const addItem = (section, template) =>
 		setCvData((prev) => ({ ...prev, [section]: [...prev[section], template] }));
-	};
 
 	const updateListItem = (section, index, field, value) => {
 		setCvData((prev) => {
@@ -97,42 +108,41 @@ const ManualCVBuilder = () => {
 		});
 	};
 
-	const deleteListItem = (section, index) => {
+	const deleteListItem = (section, index) =>
 		setCvData((prev) => ({ ...prev, [section]: prev[section].filter((_, i) => i !== index) }));
-	};
 
-	// --- JAVÍTOTT SKILL KEZELÉS (onBlur alapú) ---
-	// Csak akkor frissítjük a state-et (és alakítjuk tömbbé), amikor a user befejezte az írást (kikattint).
-	// Ez megoldja a "vessző eltűnés" problémát.
-	const handleSkillBlur = (categoryName, valueString) => {
+	const handleSkillChange = (categoryName, valueString) => {
 		const itemsArray = valueString
 			.split(',')
 			.map((s) => s.trim())
 			.filter((s) => s !== '');
-
 		setCvData((prev) => {
 			const newSkills = prev.skills.map((skill) => {
-				if (skill.category === categoryName) {
-					return { ...skill, items: itemsArray };
-				}
+				if (skill.category === categoryName) return { ...skill, items: itemsArray };
 				return skill;
 			});
 			return { ...prev, skills: newSkills };
 		});
 	};
 
-	// Segéd a skill input megjelenítéséhez (Tömb -> String)
-	const getSkillString = (categoryName) => {
+	const getSkillValue = (categoryName) => {
 		const skill = cvData.skills.find((s) => s.category === categoryName);
 		return skill ? skill.items.join(', ') : '';
 	};
 
+	if (isLoadingDoc)
+		return (
+			<div className='text-center p-10'>
+				<Spinner animation='border' variant='primary' /> Betöltés...
+			</div>
+		);
+
 	return (
 		<div className='d-flex flex-column flex-lg-row h-screen bg-gray-100 overflow-hidden'>
-			{/* BAL OSZLOP: SZERKESZTŐ */}
+			{/* BAL OSZLOP */}
 			<div className='col-lg-4 col-xl-3 d-flex flex-column h-100 bg-white border-end shadow-sm overflow-hidden'>
 				<div className='p-3 border-bottom bg-light d-flex justify-content-between align-items-center'>
-					<h4 className='m-0 fw-bold text-primary'>Kézi Szerkesztő</h4>
+					<h4 className='m-0 fw-bold text-primary'>{id ? 'Szerkesztés' : 'Új CV'}</h4>
 					<div className='d-flex gap-2'>
 						<Button variant='primary' size='sm' onClick={() => setShowSaveModal(true)}>
 							Mentés
@@ -145,7 +155,7 @@ const ManualCVBuilder = () => {
 
 				<div className='flex-grow-1 overflow-y-auto p-3'>
 					<Accordion defaultActiveKey='0'>
-						{/* 1. PROFIL & KAPCSOLAT */}
+						{/* --- MEZŐK (Ugyanaz, mint eddig) --- */}
 						<Accordion.Item eventKey='0'>
 							<Accordion.Header>Személyes Adatok</Accordion.Header>
 							<Accordion.Body>
@@ -159,7 +169,7 @@ const ManualCVBuilder = () => {
 									/>
 								</Form.Group>
 								<Form.Group className='mb-2'>
-									<Form.Label>Pozíció / Titulus</Form.Label>
+									<Form.Label>Pozíció</Form.Label>
 									<Form.Control
 										value={cvData.profile.title}
 										onChange={(e) =>
@@ -224,14 +234,12 @@ const ManualCVBuilder = () => {
 							</Accordion.Body>
 						</Accordion.Item>
 
-						{/* 2. RÖVIDEN MAGAMRÓL */}
 						<Accordion.Item eventKey='1'>
 							<Accordion.Header>Röviden magamról</Accordion.Header>
 							<Accordion.Body>
 								<Form.Control
 									as='textarea'
 									rows={4}
-									placeholder='Írj magadról...'
 									value={cvData.profile.summary}
 									onChange={(e) =>
 										handleNestedChange('profile', 'summary', e.target.value)
@@ -240,7 +248,6 @@ const ManualCVBuilder = () => {
 							</Accordion.Body>
 						</Accordion.Item>
 
-						{/* 3. TANULMÁNYOK */}
 						<Accordion.Item eventKey='2'>
 							<Accordion.Header>Tanulmányok</Accordion.Header>
 							<Accordion.Body>
@@ -333,7 +340,6 @@ const ManualCVBuilder = () => {
 							</Accordion.Body>
 						</Accordion.Item>
 
-						{/* 4. TAPASZTALATOK */}
 						<Accordion.Item eventKey='3'>
 							<Accordion.Header>Tapasztalatok</Accordion.Header>
 							<Accordion.Body>
@@ -359,7 +365,7 @@ const ManualCVBuilder = () => {
 											/>
 											<Form.Control
 												className='mb-1'
-												placeholder='Pozíció'
+												placeholder='Beosztás'
 												value={exp.position}
 												onChange={(e) =>
 													updateListItem('experience', idx, 'position', e.target.value)
@@ -391,11 +397,10 @@ const ManualCVBuilder = () => {
 													}
 												/>
 											</div>
-											{/* TEXTAREA JAVÍTVA: Sima stringként kezeljük */}
 											<Form.Control
 												as='textarea'
 												rows={4}
-												placeholder='Feladatok leírása...'
+												placeholder='Feladatok...'
 												value={exp.description}
 												onChange={(e) =>
 													updateListItem(
@@ -428,29 +433,27 @@ const ManualCVBuilder = () => {
 							</Accordion.Body>
 						</Accordion.Item>
 
-						{/* 5. KÉSZSÉGEK - JAVÍTVA (defaultValue + onBlur) */}
 						<Accordion.Item eventKey='4'>
 							<Accordion.Header>Készségek</Accordion.Header>
 							<Accordion.Body>
 								<Form.Group className='mb-2'>
-									<Form.Label>Szoftverek (vesszővel)</Form.Label>
+									<Form.Label>Szoftverek</Form.Label>
 									<Form.Control
 										as='textarea'
 										rows={2}
-										// defaultValue-t használunk, hogy ne írja felül gépelés közben
-										defaultValue={getSkillString('Software Proficiency')}
+										defaultValue={getSkillValue('Software Proficiency')}
 										onBlur={(e) =>
-											handleSkillBlur('Software Proficiency', e.target.value)
+											handleSkillChange('Software Proficiency', e.target.value)
 										}
 									/>
 								</Form.Group>
 								<Form.Group className='mb-2'>
-									<Form.Label>Nyelvek (vesszővel)</Form.Label>
+									<Form.Label>Nyelvek</Form.Label>
 									<Form.Control
 										as='textarea'
 										rows={2}
-										defaultValue={getSkillString('Languages')}
-										onBlur={(e) => handleSkillBlur('Languages', e.target.value)}
+										defaultValue={getSkillValue('Languages')}
+										onBlur={(e) => handleSkillChange('Languages', e.target.value)}
 									/>
 								</Form.Group>
 								<Form.Group>
@@ -458,8 +461,8 @@ const ManualCVBuilder = () => {
 									<Form.Control
 										as='textarea'
 										rows={2}
-										defaultValue={getSkillString('Core Competencies')}
-										onBlur={(e) => handleSkillBlur('Core Competencies', e.target.value)}
+										defaultValue={getSkillValue('Core Competencies')}
+										onBlur={(e) => handleSkillChange('Core Competencies', e.target.value)}
 									/>
 								</Form.Group>
 							</Accordion.Body>
@@ -468,17 +471,17 @@ const ManualCVBuilder = () => {
 				</div>
 			</div>
 
-			{/* JOBB OSZLOP: PREVIEW */}
+			{/* JOBB OSZLOP */}
 			<div className='col-lg-8 col-xl-9 bg-secondary bg-opacity-25 h-100 overflow-auto d-flex justify-content-center p-4'>
 				<div style={{ transform: 'scale(0.9)', transformOrigin: 'top center' }}>
 					<Preview ref={previewRef} data={cvData} />
 				</div>
 			</div>
 
-			{/* MODAL */}
+			{/* MENTÉS MODAL */}
 			<Modal show={showSaveModal} onHide={() => setShowSaveModal(false)} centered>
 				<Modal.Header closeButton>
-					<Modal.Title>Mentés</Modal.Title>
+					<Modal.Title>{id ? 'Módosítások mentése' : 'Mentés'}</Modal.Title>
 				</Modal.Header>
 				<Modal.Body>
 					<Form.Control
@@ -493,7 +496,7 @@ const ManualCVBuilder = () => {
 						Mégse
 					</Button>
 					<Button variant='primary' onClick={handleSaveSubmit}>
-						Mentés
+						{id ? 'Frissítés' : 'Mentés'}
 					</Button>
 				</Modal.Footer>
 			</Modal>
