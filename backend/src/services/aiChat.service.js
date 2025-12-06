@@ -2,11 +2,9 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { v4 as uuidv4 } from 'uuid';
 import ChatSession from '../models/mongodb/ChatSession.js';
-import { decryptAPIKey } from '../utils/encryption.js';
 
 export class AIChatService {
-	static activeChats = new Map();
-	// Standard CV template
+	// Standard CV template, remains unchanged
 	static EMPTY_CV_TEMPLATE = {
 		personal_info: {
 			full_name: '',
@@ -30,7 +28,7 @@ export class AIChatService {
 		awards_and_recognitions: [],
 	};
 
-	// Fields tracking for progress
+	// Fields for progress tracking, remains unchanged
 	static CV_FIELDS = [
 		'personal_info',
 		'summary',
@@ -38,623 +36,262 @@ export class AIChatService {
 		'education',
 		'skills',
 		'key_projects_achievements',
+		'awards_and_recognitions',
 	];
 
 	/**
-	 * Start a new chat session
+	 * A centralized method for calling the Gemini API.
+	 * @param {string} apiKey - The user's Google Gemini API key.
+	 * @param {string} prompt - The prompt to send to the model.
+	 * @returns {Promise<string>} - The text response from the model.
+	 */
+	static async _callGemini(apiKey, prompt) {
+		try {
+			const genAI = new GoogleGenerativeAI(apiKey);
+			const model = genAI.getGenerativeModel({ model: 'gemma-3-27b-it' });
+			const result = await model.generateContent(prompt);
+			return result.response.text();
+		} catch (error) {
+			console.error('❌ Gemini API call failed:', error.message);
+			// Propagate the error to be handled by the calling function
+			throw new Error('Failed to get a response from the AI. Please check your API key and try again.');
+		}
+	}
+
+	/**
+	 * Attempts to parse a JSON string, with cleanup for common markdown issues.
+	 * @param {string} jsonString - The string to parse.
+	 * @returns {object | null} - The parsed object or null if parsing fails.
+	 */
+	static _parseJsonResponse(jsonString) {
+		try {
+			const cleanedString = jsonString.replace(/```json/gi, '').replace(/```/g, '').trim();
+			return JSON.parse(cleanedString);
+		} catch (error) {
+			console.error('❌ Failed to parse JSON response from AI:', error);
+			console.log('📝 Raw response was:', jsonString);
+			return null;
+		}
+	}
+
+	/**
+	 * AI Function 1: Updates the CV JSON based on user's response.
+	 * @param {object} currentCv - The current CV data as a JSON object.
+	 * @param {string} lastQuestion - The last question the AI asked the user.
+	 * @param {string} userResponse - The user's response to the question.
+	 * @param {string} apiKey - The user's API key.
+	 * @returns {Promise<object>} - The updated CV data.
+	 */
+	static async _updateCvWithUserResponse(currentCv, lastQuestion, userResponse, apiKey) {
+		const prompt = `You are a CV data processing expert.
+Your task is to update a CV provided in JSON format based on a user's response to a specific question.
+Analyze the user's response and integrate the new information into the correct fields of the JSON structure.
+
+RULES:
+1.  ONLY return the complete, updated JSON object.
+2.  Do NOT return any explanatory text, markdown, or anything other than the raw JSON.
+3.  If the user's response is unclear or doesn't answer the question, return the original JSON unchanged.
+4.  Merge new information correctly (e.g., add new items to arrays, update string fields).
+
+**Current CV JSON:**
+\`\`\`json
+${JSON.stringify(currentCv, null, 2)}
+\`\`\`
+
+**Question Asked to User:**
+"${lastQuestion}"
+
+**User's Response:**
+"${userResponse}"
+
+Return the updated and complete JSON object now.`;
+
+		const responseText = await this._callGemini(apiKey, prompt);
+		const updatedCv = this._parseJsonResponse(responseText);
+
+		// If parsing fails or AI returns non-JSON, return the original CV to avoid data loss.
+		return updatedCv || currentCv;
+	}
+
+	/**
+	 * AI Function 2: Generates the next question based on the current state of the CV.
+	 * @param {object} currentCv - The current CV data.
+	 * @param {string} docType - The document type ('cv' or 'cover_letter').
+	 * @param {string} apiKey - The user's API key.
+	 * @returns {Promise<string>} - The next question to ask the user.
+	 */
+	static async _generateNextQuestion(currentCv, docType, apiKey) {
+		const missingFields = this.getMissingFields(this.getCollectedFields(currentCv));
+		const progress = this.calculateProgress(this.getCollectedFields(currentCv));
+
+		let systemDirection;
+		if (progress >= 100 || missingFields.length === 0) {
+			systemDirection = `The user's ${docType} is nearly complete. Politely ask if they have any final additions or if they are ready to finalize the document.`;
+		} else {
+			const nextField = missingFields[0];
+			const questionHint = this.getFollowUpQuestion(nextField);
+			systemDirection = `The next topic to ask about is "${nextField}". Your task is to formulate a friendly, conversational question based on this hint: "${questionHint}". Acknowledge the user's progress and ask only ONE question.`;
+		}
+
+		const prompt = `You are a helpful and professional CV writing assistant.
+Your goal is to help a user build their ${docType} by asking them questions one by one.
+
+**Current CV State:**
+\`\`\`json
+${JSON.stringify(currentCv, null, 2)}
+\`\`\`
+
+**Your Instruction:**
+${systemDirection}
+
+Generate and return ONLY the single question you should ask the user next. Do not add any preamble.`;
+
+		return this._callGemini(apiKey, prompt);
+	}
+
+	/**
+	 * Starts a new chat session.
 	 */
 	static async startChatSession(userId, initialMessage, docType, apiKey) {
 		const sessionId = uuidv4();
 
-		const systemInstruction = this.getSystemInstruction(docType);
+		// 1. Perform an initial CV update based on the user's first message.
+		const initialCvData = await this._updateCvWithUserResponse(
+			this.EMPTY_CV_TEMPLATE,
+			'Please provide me with some initial details to start building your CV.',
+			initialMessage,
+			apiKey,
+		);
 
-		const genAI = new GoogleGenerativeAI(apiKey);
-		const model = genAI.getGenerativeModel({
-			model: 'gemini-2.5-flash',
-			generationConfig: {
-				temperature: 0.7,
-				maxOutputTokens: 1000,
-			},
-		});
+		// 2. Generate the first follow-up question.
+		const firstQuestion = await this._generateNextQuestion(initialCvData, docType, apiKey);
 
-		const contextPrompt = `${systemInstruction}\n\nUser's initial information: ${initialMessage}\n\nAnalyze this information, acknowledge what they shared, and ask for the NEXT most important missing detail. Be conversational and friendly. Ask only ONE question at a time.`;
-
-		const chat = model.startChat({
-			history: [],
-			generationConfig: {
-				maxOutputTokens: 1000,
-			},
-		});
-
-		const result = await chat.sendMessage(contextPrompt);
-		const aiResponse = result.response.text();
-
-		// Extract data from initial message
-		const extractedData = await this.extractDataFromMessage(initialMessage, apiKey);
-
-		// Merge with empty template
-		const cvData = this.mergeWithTemplate(extractedData);
-
-		// Save chat session
+		// 3. Create and save the new chat session.
 		const chatSession = await ChatSession.create({
 			user_id: userId,
 			session_id: sessionId,
 			doc_type: docType,
 			status: 'active',
-			conversation_history: [
-				{
-					role: 'user',
-					parts: [{ text: initialMessage }],
-					timestamp: new Date(),
-				},
-				{
-					role: 'model',
-					parts: [{ text: aiResponse }],
-					timestamp: new Date(),
-				},
-			],
-			current_cv_data: cvData,
-			fields_collected: this.getCollectedFields(cvData),
-			next_field_to_ask: null,
+			current_cv_data: initialCvData,
+			fields_collected: this.getCollectedFields(initialCvData),
+			// Store only the latest question to guide the next step.
+			conversation_history: [{ role: 'model', parts: [{ text: firstQuestion }] }],
 		});
 
-		// ✅ ADD THESE LINES - Cache the chat instance
-		const cacheKey = `${userId}-${sessionId}`;
-		this.activeChats.set(cacheKey, {
-			chat: chat,
-			lastAccessed: Date.now(),
-			userId: userId,
-			sessionId: sessionId,
-		});
-
+		// 4. Return the initial state to the frontend.
 		return {
 			session_id: sessionId,
-			message: aiResponse,
-			cv_data: cvData,
+			message: firstQuestion,
+			cv_data: initialCvData,
 			progress: this.calculateProgress(chatSession.fields_collected),
 			is_complete: false,
 		};
 	}
 
 	/**
-	 * Continue chat conversation
+	 * Continues an existing chat conversation.
 	 */
 	static async continueChat(userId, sessionId, userMessage, apiKey) {
-		const cacheKey = `${userId}-${sessionId}`;
-
-		// ✅ CHECK CACHE FIRST
-		let cachedChat = this.activeChats.get(cacheKey);
-
-		const chatSession = await ChatSession.findOne({
-			user_id: userId,
-			session_id: sessionId,
-			status: 'active',
-		});
-
+		// 1. Retrieve the chat session.
+		const chatSession = await ChatSession.findOne({ user_id: userId, session_id: sessionId, status: 'active' });
 		if (!chatSession) {
-			throw new Error('Chat session not found or expired');
+			throw new Error('Chat session not found or has expired.');
 		}
 
-		// ✅ RECREATE CHAT FROM HISTORY IF NOT IN CACHE
-		if (!cachedChat) {
-			console.log('⚠️ Chat not in cache, recreating from history for session:', sessionId);
+		// 2. Get the context: current CV and the last question asked.
+		const lastQuestion =
+			chatSession.conversation_history.length > 0
+				? chatSession.conversation_history[0].parts[0].text
+				: 'What should we work on next?';
+		const currentCv = chatSession.current_cv_data;
 
-			// Limit to last 10 messages to avoid token limits
-			const recentHistory = chatSession.conversation_history.slice(-10);
+		// 3. Update the CV with the user's new message.
+		const updatedCv = await this._updateCvWithUserResponse(currentCv, lastQuestion, userMessage, apiKey);
 
-			const geminiHistory = recentHistory.map((msg) => ({
-				role: msg.role,
-				parts: [{ text: msg.parts[0].text }],
-			}));
-
-			const genAI = new GoogleGenerativeAI(apiKey);
-			const model = genAI.getGenerativeModel({
-				model: 'gemini-2.0-flash',
-				generationConfig: {
-					temperature: 0.7,
-					maxOutputTokens: 1000,
-				},
-			});
-
-			const chat = model.startChat({
-				history: geminiHistory,
-				generationConfig: {
-					maxOutputTokens: 1000,
-				},
-			});
-
-			cachedChat = {
-				chat: chat,
-				lastAccessed: Date.now(),
-				userId: userId,
-				sessionId: sessionId,
-			};
-			this.activeChats.set(cacheKey, cachedChat);
+		let nextQuestion;
+		// 4. Check if the CV was actually updated. If not, the AI likely failed to parse the response.
+		if (JSON.stringify(updatedCv) === JSON.stringify(currentCv)) {
+			// Data has not changed. Ask the user to rephrase.
+			nextQuestion = `I'm sorry, I had trouble understanding your response about "${lastQuestion
+				.toLowerCase()
+				.substring(0, 50)}...". Could you please try rephrasing that for me?`;
 		} else {
-			console.log('✅ Using cached chat for session:', sessionId);
+			// 5. Generate the next logical question based on the updated CV.
+			nextQuestion = await this._generateNextQuestion(updatedCv, chatSession.doc_type, apiKey);
 		}
 
-		// ✅ USE CACHED CHAT INSTANCE
-		const chat = cachedChat.chat;
-
-		// Extract data from user message
-		const newData = await this.extractDataFromMessage(userMessage, apiKey);
-
-		// Merge new data with existing
-		chatSession.current_cv_data = this.deepMerge(chatSession.current_cv_data, newData);
-
-		// Update fields collected
-		chatSession.fields_collected = this.getCollectedFields(chatSession.current_cv_data);
-
-		// Add user message to history
-		chatSession.conversation_history.push({
-			role: 'user',
-			parts: [{ text: userMessage }],
-			timestamp: new Date(),
-		});
-
-		// Determine what to ask next
-		const missingFields = this.getMissingFields(chatSession.fields_collected);
-		const progress = this.calculateProgress(chatSession.fields_collected);
-
-		let aiPrompt;
-		if (missingFields.length === 0 || progress >= 80) {
-			aiPrompt = `Great! I have substantial information about your ${chatSession.doc_type}. Let me acknowledge what you just shared and ask if there's anything else you'd like to add or if you're ready to finalize.`;
-
-			// ✅ DON'T set status to 'completed' yet
-			// ✅ DON'T remove from cache yet
-			//chatSession.status = 'completed';
-
-			// ✅ REMOVE FROM CACHE WHEN COMPLETED
-			//this.activeChats.delete(cacheKey);
-			//console.log('🏁 Session completed, removed from cache:', sessionId);
-		} else {
-			const nextField = missingFields[0];
-			aiPrompt = `Acknowledge the user's previous response positively, then ${this.getFollowUpQuestion(
-				nextField,
-				chatSession.current_cv_data,
-			)}`;
-		}
-
-		// ✅ USE CACHED CHAT TO SEND MESSAGE
-		const result = await chat.sendMessage(aiPrompt);
-		const aiResponse = result.response.text();
-
-		// Add AI response to history
-		chatSession.conversation_history.push({
-			role: 'model',
-			parts: [{ text: aiResponse }],
-			timestamp: new Date(),
-		});
-
+		// 6. Update the session in the database.
+		chatSession.current_cv_data = updatedCv;
+		chatSession.fields_collected = this.getCollectedFields(updatedCv);
+		chatSession.conversation_history = [{ role: 'model', parts: [{ text: nextQuestion }] }]; // Overwrite with the new question.
 		await chatSession.save();
 
-		// ✅ UPDATE LAST ACCESSED TIME
-		if (this.activeChats.has(cacheKey)) {
-			cachedChat.lastAccessed = Date.now();
-			this.activeChats.set(cacheKey, cachedChat);
-		}
+		const progress = this.calculateProgress(chatSession.fields_collected);
+		const isComplete = progress >= 100;
 
+		// 7. Return the new state to the frontend.
 		return {
 			session_id: sessionId,
-			message: aiResponse,
-			cv_data: chatSession.current_cv_data,
+			message: nextQuestion,
+			cv_data: updatedCv,
 			progress: progress,
-			is_complete: false,
+			is_complete: isComplete,
 			fields_collected: chatSession.fields_collected,
-			missing_fields: missingFields,
+			missing_fields: this.getMissingFields(chatSession.fields_collected),
 		};
 	}
 
-	/**
-	 * Extract structured data from user message using AI
-	 */
-	static async extractDataFromMessage(message, apiKey) {
-		const genAI = new GoogleGenerativeAI(apiKey);
-		const model = genAI.getGenerativeModel({
-			model: 'gemini-2.0-flash-lite',
-			generationConfig: {
-				temperature: 0.1,
-				topP: 1,
-				topK: 1,
-			},
-		});
+	// --- Helper Methods (mostly unchanged) ---
 
-		const prompt = `You are a data extraction expert. Extract ALL relevant CV information from the user's message and return it as JSON.
-
-User message: "${message}"
-
-Rules:
-1. Extract EVERY piece of information mentioned
-2. For dates, use MM/YYYY format or "Present" for current
-3. Split descriptions into bullet points
-4. Categorize skills appropriately
-5. If info is missing, use empty string "" or empty array []
-6. Return ONLY valid JSON, no markdown, no explanation
-
-Return this EXACT structure (fill only what you can extract):
-{
-  "personal_info": {
-    "full_name": "",
-    "title": "",
-    "phone": "",
-    "email": "",
-    "linkedin": "",
-    "website": "",
-    "location": ""
-  },
-  "summary": "",
-  "experience": [
-    {
-      "title": "",
-      "company": "",
-      "location": "",
-      "start_date": "",
-      "end_date": "",
-      "description_bullets": []
-    }
-  ],
-  "education": [
-    {
-      "institution": "",
-      "degree": "",
-      "field_of_study": "",
-      "graduation_date": "",
-      "details": ""
-    }
-  ],
-  "skills": {
-    "core_competencies": [],
-    "software_proficiency": [],
-    "language_fluency": [],
-    "certifications": []
-  },
-  "key_projects_achievements": [
-    {
-      "name": "",
-      "description": "",
-      "key_areas_used": []
-    }
-  ],
-  "awards_and_recognitions": []
-}
-
-Extract and return JSON now:`;
-
-		try {
-			const result = await model.generateContent(prompt);
-			let responseText = result.response.text().trim();
-
-			// Clean up response
-			//responseText = responseText.replace(/``````\n?/g, '').trim();
-			responseText = responseText
-				.replace(/```json/gi, '') // Remove ```
-				.replace(/```/g, '') // Remove ```
-				.replace(/`/g, '') // Remove remaining backticks
-				.trim();
-
-			console.log('🔍 Extraction attempt for:', message.substring(0, 50) + '...');
-			console.log('📝 Raw AI response:', responseText.substring(0, 200) + '...');
-
-			const extracted = JSON.parse(responseText);
-			console.log('✅ Extracted data:', JSON.stringify(extracted, null, 2));
-
-			return this.mergeWithTemplate(extracted);
-		} catch (error) {
-			console.error('❌ Error extracting data:', error.message);
-			console.error('Message was:', message);
-			return { ...this.EMPTY_CV_TEMPLATE };
-		}
-	}
-
-	/**
-	 * Merge extracted data with empty template
-	 */
-	static mergeWithTemplate(data) {
-		const result = JSON.parse(JSON.stringify(this.EMPTY_CV_TEMPLATE));
-
-		if (!data) return result;
-
-		// Merge personal_info
-		if (data.personal_info) {
-			result.personal_info = { ...result.personal_info, ...data.personal_info };
-		}
-
-		// Merge summary
-		if (data.summary) {
-			result.summary = data.summary;
-		}
-
-		// Merge arrays (experience, education, etc.)
-		if (data.experience && Array.isArray(data.experience)) {
-			result.experience = data.experience.map((exp) => ({
-				title: exp.title || '',
-				company: exp.company || '',
-				location: exp.location || '',
-				start_date: exp.start_date || '',
-				end_date: exp.end_date || '',
-				description_bullets: exp.description_bullets || [],
-			}));
-		}
-
-		if (data.education && Array.isArray(data.education)) {
-			result.education = data.education.map((edu) => ({
-				institution: edu.institution || '',
-				degree: edu.degree || '',
-				field_of_study: edu.field_of_study || '',
-				graduation_date: edu.graduation_date || '',
-				details: edu.details || '',
-			}));
-		}
-
-		if (data.skills) {
-			result.skills = {
-				core_competencies: data.skills.core_competencies || [],
-				software_proficiency: data.skills.software_proficiency || [],
-				language_fluency: data.skills.language_fluency || [],
-				certifications: data.skills.certifications || [],
-			};
-		}
-
-		if (data.key_projects_achievements && Array.isArray(data.key_projects_achievements)) {
-			result.key_projects_achievements = data.key_projects_achievements.map((proj) => ({
-				name: proj.name || '',
-				description: proj.description || '',
-				key_areas_used: proj.key_areas_used || [],
-			}));
-		}
-
-		if (data.awards_and_recognitions && Array.isArray(data.awards_and_recognitions)) {
-			result.awards_and_recognitions = data.awards_and_recognitions;
-		}
-
-		return result;
-	}
-
-	/**
-	 * Deep merge two CV data objects
-	 */
-	static deepMerge(existing, newData) {
-		const result = JSON.parse(JSON.stringify(existing));
-
-		// Merge personal_info
-		if (newData.personal_info) {
-			Object.keys(newData.personal_info).forEach((key) => {
-				if (newData.personal_info[key]) {
-					result.personal_info[key] = newData.personal_info[key];
-				}
-			});
-		}
-
-		// Merge summary
-		if (newData.summary) {
-			result.summary = newData.summary;
-		}
-
-		// Merge experience (append new or update existing)
-		if (newData.experience && newData.experience.length > 0) {
-			newData.experience.forEach((newExp) => {
-				if (newExp.title || newExp.company) {
-					const existingIndex = result.experience.findIndex(
-						(e) => e.company === newExp.company && e.title === newExp.title,
-					);
-
-					if (existingIndex >= 0) {
-						result.experience[existingIndex] = {
-							...result.experience[existingIndex],
-							...newExp,
-						};
-					} else {
-						result.experience.push(newExp);
-					}
-				}
-			});
-		}
-
-		// Merge education
-		if (newData.education && newData.education.length > 0) {
-			newData.education.forEach((newEdu) => {
-				if (newEdu.institution || newEdu.degree) {
-					const existingIndex = result.education.findIndex(
-						(e) => e.institution === newEdu.institution && e.degree === newEdu.degree,
-					);
-
-					if (existingIndex >= 0) {
-						result.education[existingIndex] = {
-							...result.education[existingIndex],
-							...newEdu,
-						};
-					} else {
-						result.education.push(newEdu);
-					}
-				}
-			});
-		}
-
-		// Merge skills (combine arrays, remove duplicates)
-		if (newData.skills) {
-			Object.keys(newData.skills).forEach((skillType) => {
-				if (Array.isArray(newData.skills[skillType])) {
-					result.skills[skillType] = [
-						...new Set([...result.skills[skillType], ...newData.skills[skillType]]),
-					].filter((s) => s);
-				}
-			});
-		}
-
-		// Merge projects
-		if (newData.key_projects_achievements && newData.key_projects_achievements.length > 0) {
-			newData.key_projects_achievements.forEach((newProj) => {
-				if (newProj.name) {
-					const existingIndex = result.key_projects_achievements.findIndex(
-						(p) => p.name === newProj.name,
-					);
-
-					if (existingIndex >= 0) {
-						result.key_projects_achievements[existingIndex] = {
-							...result.key_projects_achievements[existingIndex],
-							...newProj,
-						};
-					} else {
-						result.key_projects_achievements.push(newProj);
-					}
-				}
-			});
-		}
-
-		// Merge awards
-		if (newData.awards_and_recognitions && newData.awards_and_recognitions.length > 0) {
-			result.awards_and_recognitions = [
-				...new Set([...result.awards_and_recognitions, ...newData.awards_and_recognitions]),
-			].filter((a) => a);
-		}
-
-		return result;
-	}
-
-	/**
-	 * Get collected fields (non-empty sections)
-	 */
 	static getCollectedFields(cvData) {
-		const fields = [];
+		const fields = new Set();
+		if (!cvData) return [];
 
-		// Check personal_info
-		if (Object.values(cvData.personal_info).some((v) => v)) {
-			fields.push('personal_info');
-		}
+		if (cvData.personal_info && Object.values(cvData.personal_info).some((v) => v)) fields.add('personal_info');
+		if (cvData.summary) fields.add('summary');
+		if (cvData.experience && cvData.experience.length > 0) fields.add('experience');
+		if (cvData.education && cvData.education.length > 0) fields.add('education');
+		if (cvData.skills && Object.values(cvData.skills).some((arr) => arr.length > 0)) fields.add('skills');
+		if (cvData.key_projects_achievements && cvData.key_projects_achievements.length > 0) fields.add('key_projects_achievements');
+		if (cvData.awards_and_recognitions && cvData.awards_and_recognitions.length > 0) fields.add('awards_and_recognitions');
 
-		// Check summary
-		if (cvData.summary) {
-			fields.push('summary');
-		}
-
-		// Check experience
-		if (cvData.experience.length > 0) {
-			fields.push('experience');
-		}
-
-		// Check education
-		if (cvData.education.length > 0) {
-			fields.push('education');
-		}
-
-		// Check skills
-		if (Object.values(cvData.skills).some((arr) => arr.length > 0)) {
-			fields.push('skills');
-		}
-
-		// Check projects
-		if (cvData.key_projects_achievements.length > 0) {
-			fields.push('key_projects_achievements');
-		}
-
-		// Check awards
-		if (cvData.awards_and_recognitions.length > 0) {
-			fields.push('awards_and_recognitions');
-		}
-
-		return fields;
+		return Array.from(fields);
 	}
 
-	/**
-	 * Get system instruction
-	 */
-	static getSystemInstruction(docType) {
-		return `You are a professional CV writing assistant. Your job is to help users create a comprehensive CV by asking them questions ONE AT A TIME.
-
-Be conversational, friendly, and encouraging. After each user response:
-1. Acknowledge their input positively and specifically
-2. Ask for the NEXT piece of information needed
-3. Provide examples if helpful
-4. Never ask for multiple things at once
-
-Information to collect systematically:
-- Personal info (full name, professional title, contact details)
-- Professional summary (2-3 sentences about career highlights)
-- Work experience (roles, companies, dates, key achievements as bullet points)
-- Education (degrees, institutions, fields of study, graduation dates)
-- Skills (core competencies, software proficiency, languages, certifications)
-- Key projects (names, descriptions, technologies/skills used)
-- Awards and recognitions
-
-Be natural and conversational. Don't ask for things the user already provided.`;
-	}
-
-	/**
-	 * Get missing fields
-	 */
 	static getMissingFields(collectedFields) {
 		return this.CV_FIELDS.filter((field) => !collectedFields.includes(field));
 	}
 
-	/**
-	 * Calculate progress percentage
-	 */
 	static calculateProgress(collectedFields) {
-		const totalFields = this.CV_FIELDS.length;
-		const collected = collectedFields.length;
-		return Math.round((collected / totalFields) * 100);
+		return Math.round((collectedFields.length / this.CV_FIELDS.length) * 100);
 	}
 
-	/**
-	 * Generate follow-up question for next field
-	 */
-	static getFollowUpQuestion(field, currentData) {
+	static getFollowUpQuestion(field) {
 		const questions = {
 			personal_info:
-				'ask for their full name, professional title, and contact information (email, phone, location, LinkedIn profile if they have one).',
-			summary:
-				"ask them to describe their professional background in 2-3 sentences - what they do, their experience level, and what they're looking for.",
+				'Ask for their full name, professional title, and contact information (email, phone, location).',
+			summary: "Ask for a brief professional summary (2-3 sentences).",
 			experience:
-				'ask about their work history. Request details about their most recent or current position: job title, company name, location, employment dates (start and end), and 2-3 key achievements or responsibilities as bullet points.',
-			education:
-				'ask about their educational background - degree obtained, institution name, field of study, and graduation date.',
-			skills:
-				'ask about their skills. What are their core competencies? What software, tools, or technologies are they proficient in? Any languages they speak? Professional certifications?',
-			key_projects_achievements:
-				'ask if they have any notable projects or achievements to highlight. What was the project, what did they accomplish, and what skills or technologies did they use?',
-			awards_and_recognitions:
-				'ask if they have received any awards, honors, or professional recognitions worth mentioning.',
+				'Ask about their most recent work experience, including job title, company, dates, and key responsibilities.',
+			education: 'Ask about their educational background, like degree, institution, and graduation date.',
+			skills: 'Ask what skills, software, or languages they are proficient in.',
+			key_projects_achievements: 'Ask about any significant projects or achievements they want to highlight.',
+			awards_and_recognitions: 'Ask if they have received any professional awards or recognitions.',
 		};
-
-		return questions[field] || `ask about ${field.replace(/_/g, ' ')}.`;
+		return questions[field] || `Ask the user about their ${field.replace(/_/g, ' ')}.`;
 	}
 
 	/**
-	 * Get chat session
+	 * Get chat session (unchanged)
 	 */
 	static async getChatSession(userId, sessionId) {
-		return await ChatSession.findOne({
-			user_id: userId,
-			session_id: sessionId,
-		});
+		return await ChatSession.findOne({ user_id: userId, session_id: sessionId });
 	}
 
 	/**
-	 * Get user's active sessions
+	 * Get user's active sessions (unchanged)
 	 */
 	static async getUserActiveSessions(userId) {
-		return await ChatSession.find({
-			user_id: userId,
-			status: 'active',
-		}).sort({ updated_at: -1 });
-	}
-
-	static cleanupExpiredChats() {
-		const now = Date.now();
-		const expirationTime = 30 * 60 * 1000; // 30 minutes
-
-		for (const [key, data] of this.activeChats.entries()) {
-			if (now - data.lastAccessed > expirationTime) {
-				console.log('🧹 Cleaning up expired chat session:', key);
-				this.activeChats.delete(key);
-			}
-		}
-
-		console.log(`📊 Active chats in cache: ${this.activeChats.size}`);
+		return await ChatSession.find({ user_id: userId, status: 'active' }).sort({ updated_at: -1 });
 	}
 }
-
-setInterval(() => {
-	AIChatService.cleanupExpiredChats();
-}, 10 * 60 * 1000);
