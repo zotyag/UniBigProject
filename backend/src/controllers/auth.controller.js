@@ -1,5 +1,5 @@
 // src/controllers/auth.controller.js
-import { User } from '../models/postgres/index.js';
+import { User, ProfilePicture } from '../models/postgres/index.js';
 import { Op } from 'sequelize';
 import { generateAccessToken, generateRefreshToken, verifyToken } from '../utils/jwt.js';
 export const register = async (req, res, next) => {
@@ -36,7 +36,8 @@ export const register = async (req, res, next) => {
                 username: user.username,
                 role: user.role,
                 created_at: user.created_at,
-                has_gemini_api_key: !!user.gemini_api_key_encrypted
+                has_gemini_api_key: !!user.gemini_api_key_encrypted,
+				profile_picture_url: user.profilePicture?.image_data || null,
             }
         });
     } catch (error) {
@@ -47,7 +48,12 @@ export const login = async (req, res, next) => {
     try {
         const { email, password } = req.body;
         const user = await User.findOne({
-            where: { email: email.toLowerCase() }
+            where: { email: email.toLowerCase() },
+			include: {
+				model: ProfilePicture,
+				as: 'profilePicture',
+				attributes: ['image_data'],
+			},
         });
         if (!user || !(await user.comparePassword(password))) {
             return res.status(401).json({ error: 'Incorrect email or password' });
@@ -64,7 +70,8 @@ export const login = async (req, res, next) => {
                 username: user.username,
                 role: user.role,
                 created_at: user.created_at,
-                has_gemini_api_key: !!user.gemini_api_key_encrypted
+                has_gemini_api_key: !!user.gemini_api_key_encrypted,
+				profile_picture_url: user.profilePicture?.image_data || null,
             }
         });
     } catch (error) {

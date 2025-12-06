@@ -3,6 +3,8 @@ import app from './src/app.js';
 import config from './src/config/config.js';
 import { connectPostgres } from './src/config/database.js';
 import { connectMongoDB } from './src/config/mongodb.js';
+import './src/models/associations.js';
+
 const startServer = async () => {
     try {
         // Connect to databases

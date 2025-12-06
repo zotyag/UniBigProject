@@ -2,6 +2,8 @@
 import { DataTypes, Model } from 'sequelize';
 import sequelize from '../../config/database.js';
 import bcrypt from 'bcryptjs';
+//import ProfilePicture from './ProfilePicture.js';
+
 class User extends Model {
     async comparePassword(password) {
         return await bcrypt.compare(password, this.password_hash);
@@ -70,5 +72,15 @@ User.init(
         }
     }
 );
+
+//User.hasOne(ProfilePicture, {
+//	foreignKey: 'user_id',
+//	as: 'profilePicture',
+//});
+//ProfilePicture.belongsTo(User, {
+//	foreignKey: 'user_id',
+//	as: 'user',
+//});
+
 export default User;
 

@@ -1,6 +1,46 @@
 // src/controllers/user.controller.js
 import { User } from '../models/postgres/index.js';
 import { encryptAPIKey } from '../utils/encryption.js';
+import { ProfilePictureService } from '../services/profilePicture.service.js';
+
+export const getProfilePicture = async (req, res, next) => {
+	try {
+		const picture = await ProfilePictureService.getProfilePicture(req.user.id);
+		if (!picture) {
+			return res.status(404).json({ error: 'Profile picture not found' });
+		}
+		res.json({
+			url: picture.image_data,
+		});
+	} catch (error) {
+		next(error);
+	}
+};
+
+export const setProfilePicture = async (req, res, next) => {
+	try {
+		const { image_data } = req.body;
+		if (!image_data) {
+			return res.status(400).json({ error: 'Image data is required' });
+		}
+		const picture = await ProfilePictureService.setProfilePicture(req.user.id, image_data);
+		res.status(201).json({
+			message: 'Profile picture set successfully',
+			url: picture.image_data,
+		});
+	} catch (error) {
+		next(error);
+	}
+};
+
+export const deleteProfilePicture = async (req, res, next) => {
+	try {
+		await ProfilePictureService.deleteProfilePicture(req.user.id);
+		res.status(204).send();
+	} catch (error) {
+		next(error);
+	}
+};
 export const getCurrentUser = async (req, res, next) => {
     try {
         res.json({

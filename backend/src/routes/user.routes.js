@@ -41,4 +41,13 @@ router.put(
     userController.changePassword,
 );
 
+router.get('/me/profile-picture', authenticate, userController.getProfilePicture);
+router.post(
+	'/me/profile-picture',
+	authenticate,
+	[body('image_data').notEmpty(), validate],
+	userController.setProfilePicture,
+);
+router.delete('/me/profile-picture', authenticate, userController.deleteProfilePicture);
+
 export default router;
