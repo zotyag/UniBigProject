@@ -1,31 +1,34 @@
-import { useState, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchUserProfile, updateUserProfile, setGeminiApiKey, deleteGeminiApiKey } from '../api';
-import { Form, Button, Alert, Card, Badge, InputGroup } from 'react-bootstrap';
+import { Form, Button, Alert, Card, Badge, InputGroup, Spinner } from 'react-bootstrap';
 
 const Profile = () => {
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
+	const fileInputRef = useRef(null);
 
-	// Űrlap state-ek
 	const [username, setUsername] = useState('');
 	const [email, setEmail] = useState('');
+	const [password, setPassword] = useState('');
+	const [confirmPassword, setConfirmPassword] = useState('');
+
+	// Állapotok a visszajelzésekhez
+	const [message, setMessage] = useState({ type: '', text: '' });
+	const [validationErrors, setValidationErrors] = useState({});
 
 	// Gemini Key state
 	const [apiKeyInput, setApiKeyInput] = useState('');
-	const [showApiKey, setShowApiKey] = useState(false); // Jelszó/Text toggle
+	const [showApiKey, setShowApiKey] = useState(false);
 
-	// Visszajelzések
-	const [message, setMessage] = useState({ type: '', text: '' });
-
-	// 1. ADATOK LEKÉRÉSE
+	// ADATOK LEKÉRÉSE
 	const { data: user, isLoading } = useQuery({
 		queryKey: ['userProfile'],
 		queryFn: fetchUserProfile,
 	});
 
-	// Szinkronizálás, ha megjött az adat
+	// Ha megjött az adat, töltsük ki a mezőket
 	useEffect(() => {
 		if (user) {
 			setUsername(user.username || '');
@@ -33,29 +36,58 @@ const Profile = () => {
 		}
 	}, [user]);
 
-	// 2. PROFIL ADATOK MENTÉSE
+	// VALIDÁCIÓS LOGIKA (Ugyanaz a Regex, mint a regisztrációnál)
+	const validateForm = () => {
+		let errors = {};
+		// A RegEx pontosan a Register.jsx-ből
+		const passwordPattern = new RegExp(
+			'^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&\\.])[A-Za-z\\d@$!%*?&\\.]{8,32}$',
+		);
+
+		// Csak akkor validálunk jelszót, ha a felhasználó írt valamit a mezőbe!
+		if (password) {
+			// 1. Jelszó erősség ellenőrzése
+			if (!passwordPattern.test(password)) {
+				errors.password =
+					'A jelszónak 8-32 karakter hosszúnak kell lennie, tartalmaznia kell kis- és nagybetűt, számot és speciális karaktert.';
+			}
+
+			// 2. Jelszó megerősítés ellenőrzése
+			if (!confirmPassword) {
+				errors.confirmPassword = 'Kérlek erősítsd meg a jelszót.';
+			} else if (password !== confirmPassword) {
+				errors.confirmPassword = 'A jelszavak nem egyeznek.';
+			}
+		}
+
+		setValidationErrors(errors);
+		return Object.keys(errors).length === 0; // Ha nincs hiba, true-val tér vissza
+	};
+
+	// PROFIL MÓDOSÍTÁSA
 	const updateProfileMutation = useMutation({
 		mutationFn: updateUserProfile,
 		onSuccess: () => {
-			setMessage({ type: 'success', text: 'Profil adatok frissítve!' });
+			setMessage({ type: 'success', text: 'Profil sikeresen frissítve!' });
+			setPassword('');
+			setConfirmPassword('');
+			setValidationErrors({}); // Hibák törlése siker esetén
 			queryClient.invalidateQueries(['userProfile']);
 		},
 		onError: () => setMessage({ type: 'danger', text: 'Hiba a mentéskor.' }),
 	});
 
-	// 3. GEMINI API KEY MENTÉSE
+	// GEMINI API KULCS KEZELÉS MUTÁCIÓK
 	const apiKeyMutation = useMutation({
 		mutationFn: setGeminiApiKey,
 		onSuccess: () => {
-			setMessage({ type: 'success', text: 'Gemini API kulcs sikeresen elmentve!' });
-			setApiKeyInput(''); // Töröljük a mezőt biztonsági okból
-			queryClient.invalidateQueries(['userProfile']); // Frissítjük, hogy a 'has_gemini_api_key' true legyen
+			setMessage({ type: 'success', text: 'Gemini API kulcs elmentve!' });
+			setApiKeyInput('');
+			queryClient.invalidateQueries(['userProfile']);
 		},
-		onError: () =>
-			setMessage({ type: 'danger', text: 'Érvénytelen API kulcs vagy szerver hiba.' }),
+		onError: () => setMessage({ type: 'danger', text: 'Hiba a kulcs mentésekor.' }),
 	});
 
-	// 4. GEMINI API KEY TÖRLÉSE
 	const deleteKeyMutation = useMutation({
 		mutationFn: deleteGeminiApiKey,
 		onSuccess: () => {
@@ -65,12 +97,24 @@ const Profile = () => {
 		onError: () => setMessage({ type: 'danger', text: 'Hiba a törléskor.' }),
 	});
 
-	// --- HANDLERS ---
-
-	const handleProfileUpdate = (e) => {
+	// HANDLERS
+	const handleSave = (e) => {
 		e.preventDefault();
 		setMessage({ type: '', text: '' });
-		updateProfileMutation.mutate({ username, email });
+
+		// Validáció futtatása mentés előtt
+		if (!validateForm()) {
+			return; // Ha hiba van, megállunk
+		}
+
+		const updateData = { username, email }; // Emailt is küldhetjük, bár read-only a UI-on
+
+		// Csak akkor küldjük a jelszót, ha ki van töltve (és valid)
+		if (password) {
+			updateData.password = password;
+		}
+
+		updateProfileMutation.mutate(updateData);
 	};
 
 	const handleApiKeySubmit = (e) => {
@@ -83,14 +127,12 @@ const Profile = () => {
 	};
 
 	const handleDeleteKey = () => {
-		if (
-			confirm('Biztosan törlöd az API kulcsot? A dokumentum generálás nem fog működni nélküle.')
-		) {
+		if (confirm('Biztosan törlöd az API kulcsot?')) {
 			deleteKeyMutation.mutate();
 		}
 	};
 
-	if (isLoading) return <div className='p-10 text-center text-gray-500'>Betöltés...</div>;
+	if (isLoading) return <div className='p-5 text-center'>Betöltés...</div>;
 
 	return (
 		<div className='min-h-screen bg-gray-50 py-10 px-4'>
@@ -115,14 +157,14 @@ const Profile = () => {
 				)}
 
 				<div className='grid grid-cols-1 lg:grid-cols-3 gap-8'>
-					{/* --- BAL OSZLOP: SZEMÉLYES ADATOK --- */}
+					{/* --- BAL OSZLOP: SZEMÉLYES ADATOK ÉS JELSZÓ --- */}
 					<div className='lg:col-span-2 space-y-6'>
 						<Card className='shadow-sm border-0'>
 							<Card.Body className='p-6'>
 								<h3 className='text-xl font-bold mb-4 text-gray-700 border-b pb-2'>
 									Személyes Adatok
 								</h3>
-								<Form onSubmit={handleProfileUpdate}>
+								<Form onSubmit={handleSave}>
 									<Form.Group className='mb-4'>
 										<Form.Label className='font-semibold text-gray-600'>
 											Felhasználónév
@@ -142,19 +184,68 @@ const Profile = () => {
 										<Form.Control
 											type='email'
 											value={email}
-											onChange={(e) => setEmail(e.target.value)}
+											onChange={(e) => setEmail(e.target.value)} // Elvileg read-only, de ha az API engedi, maradhat
 											className='bg-gray-50 border-gray-300 focus:bg-white transition-colors'
 										/>
+									</Form.Group>
+
+									<hr className='my-6 border-gray-200' />
+
+									<h3 className='text-xl font-bold mb-4 text-gray-700 border-b pb-2'>
+										Jelszó módosítása
+									</h3>
+									<p className='text-sm text-gray-500 mb-4'>
+										Hagyd üresen, ha nem szeretnéd megváltoztatni.
+									</p>
+
+									{/* Új Jelszó */}
+									<Form.Group className='mb-4'>
+										<Form.Label className='font-semibold text-gray-600'>
+											Új Jelszó
+										</Form.Label>
+										<Form.Control
+											type='password'
+											placeholder='••••••••'
+											value={password}
+											onChange={(e) => setPassword(e.target.value)}
+											isInvalid={!!validationErrors.password} // Bootstrap piros keret
+											className='bg-gray-50 border-gray-300 focus:bg-white transition-colors'
+										/>
+										{/* Hibaüzenet megjelenítése */}
+										<Form.Control.Feedback type='invalid'>
+											{validationErrors.password}
+										</Form.Control.Feedback>
+									</Form.Group>
+
+									{/* Jelszó megerősítés */}
+									<Form.Group className='mb-6'>
+										<Form.Label className='font-semibold text-gray-600'>
+											Új Jelszó Megerősítése
+										</Form.Label>
+										<Form.Control
+											type='password'
+											placeholder='••••••••'
+											value={confirmPassword}
+											onChange={(e) => setConfirmPassword(e.target.value)}
+											isInvalid={!!validationErrors.confirmPassword} // Bootstrap piros keret
+											className='bg-gray-50 border-gray-300 focus:bg-white transition-colors'
+										/>
+										<Form.Control.Feedback type='invalid'>
+											{validationErrors.confirmPassword}
+										</Form.Control.Feedback>
 									</Form.Group>
 
 									<div className='flex justify-end'>
 										<Button
 											variant='primary'
 											type='submit'
+											size='lg'
 											disabled={updateProfileMutation.isPending}
 											className='px-6 fw-bold'
 										>
-											{updateProfileMutation.isPending ? 'Mentés...' : 'Mentés'}
+											{updateProfileMutation.isPending
+												? 'Mentés...'
+												: 'Változások mentése'}
 										</Button>
 									</div>
 								</Form>
@@ -188,7 +279,6 @@ const Profile = () => {
 									titkosítva tároljuk.
 								</p>
 
-								{/* Ha van kulcs, mutassuk a törlés opciót */}
 								{user?.has_gemini_api_key && (
 									<div className='mb-6 p-3 bg-white rounded border border-green-200'>
 										<div className='text-green-700 font-semibold text-sm mb-2'>
@@ -206,7 +296,6 @@ const Profile = () => {
 									</div>
 								)}
 
-								{/* Kulcs megadása űrlap */}
 								<Form onSubmit={handleApiKeySubmit}>
 									<Form.Label className='font-semibold text-gray-600 text-sm'>
 										{user?.has_gemini_api_key
@@ -223,15 +312,12 @@ const Profile = () => {
 											className='border-gray-300'
 										/>
 										<Button
-											// variant="light": Világosszürke hátteret ad neki
-											// border: Keretet ad neki, hogy összeérjen az inputtal
 											variant='light'
 											className='border border-gray-300 text-gray-500 hover:text-gray-700 d-flex align-items-center'
 											onClick={() => setShowApiKey(!showApiKey)}
 											title={showApiKey ? 'Kód elrejtése' : 'Kód mutatása'}
 										>
 											{showApiKey ? (
-												// ÁTHÚZOTT SZEM IKON (SVG)
 												<svg
 													xmlns='http://www.w3.org/2000/svg'
 													width='16'
@@ -244,7 +330,6 @@ const Profile = () => {
 													<path d='M3.35 5.47c-.18.16-.353.322-.518.487A13.134 13.134 0 0 0 1.172 8l.195.288c.335.48.83 1.12 1.465 1.755C4.121 11.332 5.881 12.5 8 12.5c.716 0 1.39-.133 2.02-.36l.77.772A7.029 7.029 0 0 1 8 13.5C3 13.5 0 8 0 8s.939-1.721 2.641-3.238l.708.709zm10.296 8.884-12-12 .708-.708 12 12-.708.708z' />
 												</svg>
 											) : (
-												// SZEM IKON (SVG)
 												<svg
 													xmlns='http://www.w3.org/2000/svg'
 													width='16'

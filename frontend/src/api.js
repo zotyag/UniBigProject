@@ -20,7 +20,6 @@ const apiFetch = async (endpoint, options = {}) => {
 		...options.headers,
 	};
 
-	// NINCS TRY-CATCH, mert a hívó fél (useQuery) úgyis elkapja a hibát
 	const response = await fetch(`${BASE_URL}${endpoint}`, {
 		...options,
 		headers,
@@ -171,4 +170,10 @@ export const createDocument = async ({ title, cvData }) => {
 			user_data: cvData, // A teljes CV tartalom (a backend ezt menti el)
 		}),
 	});
+};
+
+// Egy konkrét dokumentum lekérése (A részletes adatokhoz)
+// Endpoint: GET /documents/:id
+export const fetchDocumentById = async (id) => {
+	return apiFetch(`/documents/${id}`);
 };

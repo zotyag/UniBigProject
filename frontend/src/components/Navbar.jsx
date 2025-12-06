@@ -98,7 +98,7 @@ function AppNavbar() {
 									id='user-nav-dropdown'
 									align='end'
 								>
-									<NavDropdown.Item as={Link} to='/settings'>
+									<NavDropdown.Item as={Link} to='/profile'>
 										Settings
 									</NavDropdown.Item>
 									<NavDropdown.Divider />

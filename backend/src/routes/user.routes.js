@@ -7,23 +7,20 @@ import * as userController from '../controllers/user.controller.js';
 const router = express.Router();
 router.get('/me', authenticate, userController.getCurrentUser);
 router.put(
-    '/me',
-    authenticate,
-    [
-        body('username').optional().isLength({ min: 3, max: 64 }).trim(),
-        body('email').optional().isEmail().normalizeEmail(),
-        validate
-    ],
-    userController.updateUser
+	'/me',
+	authenticate,
+	[
+		body('username').optional().isLength({ min: 3, max: 64 }).trim(),
+		body('email').optional().isEmail().normalizeEmail(),
+		validate,
+	],
+	userController.updateUser,
 );
 router.post(
-    '/me/gemini-api-key',
-    authenticate,
-    [
-        body('api_key').isLength({ min: 10 }),
-        validate
-    ],
-    userController.setGeminiAPIKey
+	'/me/gemini-api-key',
+	authenticate,
+	[body('api_key').isLength({ min: 10 }), validate],
+	userController.setGeminiAPIKey,
 );
 router.delete('/me/gemini-api-key', authenticate, userController.deleteGeminiAPIKey);
 export default router;

@@ -8,6 +8,7 @@ import ManualCVBuilder from './pages/ManualCVBuilder';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import CVGenerator from './pages/CVGenerator';
+import Dashboard from './pages/Dashboard';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
@@ -27,6 +28,7 @@ function App() {
 						<Route path='/register' element={<Register />} />
 						<Route path='/cvgenerator' element={<CVGenerator />} />
 						<Route path='/cvbuilder' element={<ManualCVBuilder />} />
+						<Route path='/dashboard' element={<Dashboard />} />
 					</Routes>
 				</main>
 				<Footer />
