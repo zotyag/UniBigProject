@@ -43,17 +43,8 @@ function AppNavbar() {
 
 				<Navbar.Collapse id='main-navbar'>
 					<Nav className='ms-3'>
-						<Nav.Link as={Link} to='/' className='fw-semibold fs-5 !text-white'>
-							Home
-						</Nav.Link>
-						<Nav.Link as={Link} to='/profile' className='fw-semibold fs-5 !text-white'>
-							Profile
-						</Nav.Link>
-						<Nav.Link as={Link} to='/cvgenerator' className='fw-semibold fs-5 !text-white'>
-							Generator
-						</Nav.Link>
-						<Nav.Link as={Link} to='/cvbuilder' className='fw-semibold fs-5 !text-white'>
-							ManualCVBuilder
+						<Nav.Link as={Link} to='/dashboard' className='fw-semibold fs-5 !text-white'>
+							DashBoard
 						</Nav.Link>
 					</Nav>
 
