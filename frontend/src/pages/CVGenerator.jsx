@@ -5,6 +5,7 @@ import './styles/app.css';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import { useAuthStore } from '../stores/authStore.js';
+import ReactMarkdown from 'react-markdown';
 
 const API_BASE_URL = 'http://localhost:3000/api/v1';
 
@@ -261,7 +262,22 @@ function CVGenerator() {
 												: 'bg-white text-gray-800 shadow-sm'
 										}`}
 									>
-										{msg.text}
+										<ReactMarkdown
+											components={{
+												// Bekezdések közötti térköz
+												p: ({node, ...props}) => <p className="mb-2 last:mb-0" {...props} />,
+												// Pöttyös lista formázása
+												ul: ({node, ...props}) => <ul className="list-disc ml-5 mb-2" {...props} />,
+												// Számozott lista formázása
+												ol: ({node, ...props}) => <ol className="list-decimal ml-5 mb-2" {...props} />,
+												// Lista elemek
+												li: ({node, ...props}) => <li className="pl-1" {...props} />,
+												// Félkövér szöveg
+												strong: ({node, ...props}) => <strong className="font-bold" {...props} />,
+											}}
+										>
+											{msg.text}
+										</ReactMarkdown>
 									</div>
 								</div>
 							))}
