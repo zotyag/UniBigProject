@@ -11,40 +11,39 @@ const BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000') 
 const normalizeDocumentData = (rawData) => {
 	if (!rawData) return null;
 
-	// 1. Gyökér keresése (content_json, user_data, stb.)
-	// A dokumentum objektumon belül keressük a tartalmat
 	const root = rawData.content_json || rawData.user_data || rawData.content || rawData;
 
-	// 2. Ha már jó formátumban van (ManualBuilder mentés), akkor kész
-	if (root.personal_info) {
-		// Még egy kis biztonsági háló: a skills legyen tömb
-		if (root.skills && !Array.isArray(root.skills)) {
-			// Ha objektum, visszaalakítjuk tömbbé a Preview kedvéért
-			// (Bár a Preview most már mindkettőt kezeli, de a konzisztencia jó)
-			// De itt most feltételezzük, hogy a ManualBuilder jól mentett.
-		}
-		return { ...rawData, cvData: root }; // Visszaadjuk az eredetit, de a cvData mezőben a tartalmat
+	// If it's already in the good format, just return it.
+	if (root.personal_info && root.skills && !Array.isArray(root.skills)) {
+		return { ...rawData, cvData: root };
 	}
 
-	// 3. Backend formátum konverziója
-	const rawSkills = Array.isArray(root.skills) ? root.skills : [];
+	let normalizedSkills = {};
+	// If skills is an array of objects (the old, bad format), convert it.
+	if (Array.isArray(root.skills)) {
+		normalizedSkills = root.skills.reduce((acc, skillCategory) => {
+			const categoryKey = skillCategory.category.toLowerCase().replace(/ /g, '_');
+			acc[categoryKey] = skillCategory.items;
+			return acc;
+		}, {});
+	} else if (root.skills) {
+		// If it's already an object (the good format), use it directly.
+		normalizedSkills = root.skills;
+	}
 
-	// A Preview 'items' tömböt vár kategóriánként. Ha a DB-ben csak sima string tömbök vannak,
-	// akkor azokat be kell csomagolni.
-	// De a DB JSON-od alapján: { category: "...", items: [...] } -> Ez pont jó a Preview-nak!
 
 	const cvData = {
 		personal_info: {
-			full_name: root.profile?.name || '',
-			title: root.profile?.title || '',
-			summary: root.profile?.summary || '',
-			email: root.contact?.email || '',
-			phone: root.contact?.phone || '',
-			location: root.contact?.location || '',
-			linkedin: root.contact?.linkedin || '',
-			website: root.contact?.website || '',
+			full_name: root.profile?.name || root.personal_info?.full_name || '',
+			title: root.profile?.title || root.personal_info?.title || '',
+			summary: root.profile?.summary || root.personal_info?.summary || '',
+			email: root.contact?.email || root.personal_info?.email || '',
+			phone: root.contact?.phone || root.personal_info?.phone || '',
+			location: root.contact?.location || root.personal_info?.location || '',
+			linkedin: root.contact?.linkedin || root.personal_info?.linkedin || '',
+			website: root.contact?.website || root.personal_info?.website || '',
 		},
-		summary: root.profile?.summary || root.summary || '',
+		summary: root.summary || root.profile?.summary || '',
 
 		experience: (root.experience || []).map((exp) => ({
 			company: exp.company,
@@ -63,14 +62,13 @@ const normalizeDocumentData = (rawData) => {
 			description: edu.description,
 		})),
 
-		// A Backend skills tömbje (category, items) pont jó a Preview-nak!
-		skills: rawSkills,
+		skills: normalizedSkills,
 
-		key_projects_achievements: [],
-		awards_and_recognitions: [],
+		key_projects_achievements: root.key_projects_achievements || [],
+		awards_and_recognitions: root.awards_and_recognitions || [],
 	};
 
-	// Visszaadjuk a teljes dokumentumot, de kiegészítve a normalizált cvData-val
+	// Return the full document with the normalized cvData attached.
 	return { ...rawData, cvData };
 };
 

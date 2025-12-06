@@ -38,50 +38,49 @@ ${JSON.stringify(userData, null, 2)}
 
 Return ONLY a JSON object with the following structure:
 {
-  "profile": {
-    "name": "Full Name",
+  "personal_info": {
+    "full_name": "Full Name",
     "title": "Professional Title",
-    "summary": "Professional summary (3-4 sentences)"
-  },
-  "contact": {
+    "summary": "Professional summary (3-4 sentences)",
     "email": "email@example.com",
     "phone": "phone number",
     "location": "City, Country",
     "linkedin": "LinkedIn URL (if provided)",
     "website": "Website URL (if provided)"
   },
+  "summary": "A concise, professional summary of your career.",
   "experience": [
     {
       "company": "Company Name",
-      "position": "Job Title",
-      "startDate": "MM/YYYY",
-      "endDate": "MM/YYYY or Present",
-      "description": "Enhanced professional description"
+      "title": "Job Title",
+      "start_date": "MM/YYYY",
+      "end_date": "MM/YYYY or Present",
+      "description_bullets": ["Point 1", "Point 2"]
     }
   ],
   "education": [
     {
       "institution": "University Name",
       "degree": "Degree Type",
-      "field": "Field of Study",
-      "startDate": "MM/YYYY",
-      "endDate": "MM/YYYY",
-      "description": "Notable achievements"
+      "field_of_study": "Field of Study",
+      "graduation_date": "MM/YYYY",
+      "details": "Notable achievements or coursework"
     }
   ],
-  "skills": [
-    {
-      "category": "Category Name",
-      "items": ["skill1", "skill2", "skill3"]
-    }
-  ],
-  "projects": [
+  "skills": {
+    "core_competencies": ["skill1", "skill2"],
+    "software_proficiency": ["tech1", "tech2"],
+    "language_fluency": ["lang1", "lang2"]
+  },
+  "key_projects_achievements": [
     {
       "name": "Project Name",
       "description": "Enhanced project description",
-      "technologies": ["tech1", "tech2"],
-      "url": "Project URL (if provided)"
+      "key_areas_used": ["tech1", "tech2"]
     }
+  ],
+  "awards_and_recognitions": [
+    "Award name and date"
   ]
 }`;
   }

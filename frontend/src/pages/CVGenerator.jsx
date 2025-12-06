@@ -42,11 +42,12 @@ function CVGenerator() {
 		summary: '',
 		experience: [],
 		education: [],
-		skills: [
-			{ category: 'Core Competencies', items: [] },
-			{ category: 'Software Proficiency', items: [] },
-			{ category: 'Languages', items: [] },
-		],
+		skills: {
+			core_competencies: [],
+			software_proficiency: [],
+			language_fluency: [],
+			certifications: [],
+		},
 		key_projects_achievements: [],
 		awards_and_recognitions: [],
 	});
@@ -63,43 +64,14 @@ function CVGenerator() {
 	const updateCvDataFromAI = (aiResponseData) => {
 		if (!aiResponseData) return;
 
-		let newSkills = [];
-
-		// 1. SKILLS KONVERZIÓ: Objektum -> Tömb
-		// Ha az AI objektumként küldi (ami a JSON példádban látszik)
-		if (aiResponseData.skills && !Array.isArray(aiResponseData.skills)) {
-			const s = aiResponseData.skills;
-			newSkills = [
-				{
-					category: 'Core Competencies',
-					items: Array.isArray(s.core_competencies) ? s.core_competencies : [],
-				},
-				{
-					category: 'Software Proficiency',
-					items: Array.isArray(s.software_proficiency) ? s.software_proficiency : [],
-				},
-				{
-					category: 'Languages', // A Preview 'Languages'-t vár, az AI 'language_fluency'-t küld
-					items: Array.isArray(s.language_fluency) ? s.language_fluency : [],
-				},
-				// Opcionális: Certifications, ha a Preview kezeli
-				// { category: 'Certifications', items: s.certifications || [] }
-			];
-		}
-		// Ha véletlenül már tömbként jönne (biztonsági háló)
-		else if (Array.isArray(aiResponseData.skills)) {
-			newSkills = aiResponseData.skills;
-		}
-
-		// 2. EXPERIENCE KONVERZIÓ (Ha szükséges mezőnév csere)
-		// Az AI JSON: title, company, start_date... (ez elvileg jó a Preview-nak)
-		// De ha eltérne, itt lehetne map-elni.
-
-		// 3. STATE FRISSÍTÉS
+		// The backend now sends data in the correct format, so we can merge it directly.
 		setCvData((prev) => ({
 			...prev,
-			...aiResponseData, // Átírjuk az alap mezőket (personal_info, summary, education, experience)
-			skills: newSkills.length > 0 ? newSkills : prev.skills, // A konvertált skilleket mentjük
+			...aiResponseData,
+			skills: {
+				...prev.skills,
+				...aiResponseData.skills,
+			},
 		}));
 	};
 
