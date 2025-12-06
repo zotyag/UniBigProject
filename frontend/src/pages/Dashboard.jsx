@@ -93,10 +93,10 @@ const Dashboard = () => {
 				<div className='d-flex justify-content-between align-items-center mb-5'>
 					<h1 className='fw-bold text-gray-800 mb-1'>Dokumentumaim</h1>
 					<div className='d-flex gap-2'>
-						<Button variant='outline-primary' onClick={() => navigate('/builder')}>
+						<Button variant='outline-primary' onClick={() => navigate('/cvbuilder')}>
 							✏️ Kézi Szerkesztő
 						</Button>
-						<Button variant='primary' onClick={() => navigate('/generator')}>
+						<Button variant='primary' onClick={() => navigate('/cvgenerator')}>
 							✨ AI Generátor
 						</Button>
 					</div>
