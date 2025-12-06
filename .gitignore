@@ -33,3 +33,6 @@ dist-ssr
 .env
 
 setup.sh
+
+.gemini/
+GEMINI.md

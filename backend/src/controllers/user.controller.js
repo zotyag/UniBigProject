@@ -53,3 +53,22 @@ export const deleteGeminiAPIKey = async (req, res, next) => {
         next(error);
     }
 };
+
+export const changePassword = async (req, res, next) => {
+    try {
+        const { old_password, new_password } = req.body;
+
+        const user = await User.findByPk(req.user.id);
+
+        if (!user || !(await user.comparePassword(old_password))) {
+            return res.status(401).json({ error: 'Incorrect old password' });
+        }
+
+        user.password_hash = new_password;
+        await user.save();
+
+        res.status(204).send();
+    } catch (error) {
+        next(error);
+    }
+};

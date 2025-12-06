@@ -105,9 +105,23 @@ export const fetchUserProfile = async () => apiFetch('/users/me');
 export const updateUserProfile = async (data) =>
 	apiFetch('/users/me', { method: 'PUT', body: JSON.stringify(data) });
 
-// --- GEMINI API KEY ---
-export const setGeminiApiKey = async (apiKey) =>
-	apiFetch('/users/me/gemini-api-key', {
+// Jelszó módosítása
+// Endpoint: PUT /users/me/password
+export const changeUserPassword = async (data) => {
+	return apiFetch('/users/me/password', {
+		method: 'PUT',
+		body: JSON.stringify(data),
+	});
+};
+
+/* ==========================================================================
+   GEMINI API KEY ENDPOINTS
+   ========================================================================== */
+
+// Kulcs mentése
+// Endpoint: POST /users/me/gemini-api-key
+export const setGeminiApiKey = async (apiKey) => {
+	return apiFetch('/users/me/gemini-api-key', {
 		method: 'POST',
 		body: JSON.stringify({ api_key: apiKey }),
 	});

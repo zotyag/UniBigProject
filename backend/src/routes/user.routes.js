@@ -23,4 +23,22 @@ router.post(
 	userController.setGeminiAPIKey,
 );
 router.delete('/me/gemini-api-key', authenticate, userController.deleteGeminiAPIKey);
+
+router.put(
+    '/me/password',
+    authenticate,
+    [
+        body('old_password').notEmpty(),
+        body('new_password').isLength({ min: 8 }),
+        body('password_confirm').custom((value, { req }) => {
+            if (value !== req.body.new_password) {
+                throw new Error('Passwords do not match');
+            }
+            return true;
+        }),
+        validate,
+    ],
+    userController.changePassword,
+);
+
 export default router;

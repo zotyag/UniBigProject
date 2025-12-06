@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchUserProfile, updateUserProfile, setGeminiApiKey, deleteGeminiApiKey } from '../api';
+import { fetchUserProfile, updateUserProfile, setGeminiApiKey, deleteGeminiApiKey, changeUserPassword } from '../api';
 import { Form, Button, Alert, Card, Badge, InputGroup, Spinner } from 'react-bootstrap';
 
 const Profile = () => {
@@ -11,6 +11,7 @@ const Profile = () => {
 
 	const [username, setUsername] = useState('');
 	const [email, setEmail] = useState('');
+	const [oldPassword, setOldPassword] = useState('');
 	const [password, setPassword] = useState('');
 	const [confirmPassword, setConfirmPassword] = useState('');
 
@@ -46,6 +47,10 @@ const Profile = () => {
 
 		// Csak akkor validálunk jelszót, ha a felhasználó írt valamit a mezőbe!
 		if (password) {
+			if (!oldPassword) {
+				errors.oldPassword = 'A jelszó megváltoztatásához meg kell adni a régit.';
+			}
+
 			// 1. Jelszó erősség ellenőrzése
 			if (!passwordPattern.test(password)) {
 				errors.password =
@@ -75,6 +80,24 @@ const Profile = () => {
 			queryClient.invalidateQueries(['userProfile']);
 		},
 		onError: () => setMessage({ type: 'danger', text: 'Hiba a mentéskor.' }),
+	});
+
+	// JELSZÓ MÓDOSÍTÁSA
+	const passwordMutation = useMutation({
+		mutationFn: changeUserPassword,
+		onSuccess: () => {
+			setMessage({ type: 'success', text: 'Jelszó sikeresen frissítve!' });
+			setOldPassword('');
+			setPassword('');
+			setConfirmPassword('');
+			setValidationErrors({});
+		},
+		onError: (err) => {
+			const defaultMessage = 'Hiba a jelszó módosításakor.';
+			// Próbáljuk meg kinyerni a konkrét hibaüzenetet a backend válaszából
+			const errorMessage = err.message || defaultMessage;
+			setMessage({ type: 'danger', text: errorMessage });
+		},
 	});
 
 	// GEMINI API KULCS KEZELÉS MUTÁCIÓK
@@ -107,14 +130,19 @@ const Profile = () => {
 			return; // Ha hiba van, megállunk
 		}
 
-		const updateData = { username, email }; // Emailt is küldhetjük, bár read-only a UI-on
-
-		// Csak akkor küldjük a jelszót, ha ki van töltve (és valid)
+		// Megnézzük, hogy a jelszó mezők ki vannak-e töltve
 		if (password) {
-			updateData.password = password;
+			passwordMutation.mutate({
+				old_password: oldPassword,
+				new_password: password,
+				password_confirm: confirmPassword,
+			});
 		}
 
-		updateProfileMutation.mutate(updateData);
+		// A profiladatokat (pl. username) külön frissítjük, ha változtak
+		if (username !== user.username || email !== user.email) {
+			updateProfileMutation.mutate({ username, email });
+		}
 	};
 
 	const handleApiKeySubmit = (e) => {
@@ -198,6 +226,24 @@ const Profile = () => {
 										Hagyd üresen, ha nem szeretnéd megváltoztatni.
 									</p>
 
+									{/* Régi Jelszó */}
+									<Form.Group className='mb-4'>
+										<Form.Label className='font-semibold text-gray-600'>
+											Régi Jelszó
+										</Form.Label>
+										<Form.Control
+											type='password'
+											placeholder='••••••••'
+											value={oldPassword}
+											onChange={(e) => setOldPassword(e.target.value)}
+											isInvalid={!!validationErrors.oldPassword}
+											className='bg-gray-50 border-gray-300 focus:bg-white transition-colors'
+										/>
+										<Form.Control.Feedback type='invalid'>
+											{validationErrors.oldPassword}
+										</Form.Control.Feedback>
+									</Form.Group>
+
 									{/* Új Jelszó */}
 									<Form.Group className='mb-4'>
 										<Form.Label className='font-semibold text-gray-600'>
@@ -240,10 +286,12 @@ const Profile = () => {
 											variant='primary'
 											type='submit'
 											size='lg'
-											disabled={updateProfileMutation.isPending}
+											disabled={
+												updateProfileMutation.isPending || passwordMutation.isPending
+											}
 											className='px-6 fw-bold'
 										>
-											{updateProfileMutation.isPending
+											{updateProfileMutation.isPending || passwordMutation.isPending
 												? 'Mentés...'
 												: 'Változások mentése'}
 										</Button>
