@@ -125,6 +125,7 @@ export const setGeminiApiKey = async (apiKey) => {
 		method: 'POST',
 		body: JSON.stringify({ api_key: apiKey }),
 	});
+};
 export const deleteGeminiApiKey = async () =>
 	apiFetch('/users/me/gemini-api-key', { method: 'DELETE' });
 
