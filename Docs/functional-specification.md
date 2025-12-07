@@ -4,24 +4,24 @@
 
 ## 1. Jelenlegi helyzet
 
-Több oldal is létezik amin különböző önéletrajz sablonok, valamint motivációs levél sablonok szerepelnek. Azonban ezek az oldalak nem adják meg azt a pluszt , hogy a mesterséges intelligencia segítségével a felhasználó hatékonyabban és rövidebb idő alatt, írja meg ezeket a dokumentumokat.
+Több oldal is létezik amin különböző önéletrajz sablonok. Azonban ezek az oldalak nem adják meg azt a pluszt , hogy a mesterséges intelligencia segítségével a felhasználó hatékonyabban és rövidebb idő alatt, írja meg ezeket a dokumentumokat.
 
-Ezen problémát szeretné ez az oldal kiküszöbölni , még pedig úgy hogy minden szükséges adat megadásával, a mesterséges inteligencia készít egy személyre szabott önéletrajzot vagy motivációs levelet. Ezen felül azoknak is biztosít lehetőséget, akik a megszokott rendszert kedvelték ,és manuálisan szeretnék megírni ezeket a dokumentumokat.
+Ezen problémát szeretné ez az oldal kiküszöbölni , még pedig úgy hogy minden szükséges adat megadásával, a mesterséges inteligencia készít egy személyre szabott önéletrajzot. Ezen felül azoknak is biztosít lehetőséget, akik a megszokott rendszert kedvelték ,és manuálisan szeretnék megírni ezeket a dokumentumokat.
 
 
 
 ## 2. Vágyálom rendszer
 
-A rendszer célja egy olyan modern és felhasználóbarát webes platform megvalósítása, amely segíti a felhasználókat az álláspályázati dokumentumaik - elsősorban az önéletrajz és a motivációs levél - gyors, pontos és esztétikus elkészítésében.
+A rendszer célja egy olyan modern és felhasználóbarát webes platform megvalósítása, amely segíti a felhasználókat az álláspályázati dokumentumaik - elsősorban az önéletrajz - gyors, pontos és esztétikus elkészítésében.
 A rendszer célközönsége azok a pályakezdők, diákok és szakemberek, akik professzionális megjelenésű pályázati anyagokat szeretnének készíteni anélkül, hogy grafikai vagy szövegezési tapasztalattal rendelkeznének.
 
-A webalkalmazás a mesterséges intelligencia segítségével képes önéletrajzot és motivációs levelet generálni a felhasználó által megadott adatok és célpozíció alapján, továbbá lehetőséget biztosít manuális szerkesztésre és egyéni testreszabásra is.
+A webalkalmazás a mesterséges intelligencia segítségével képes önéletrajzot generálni a felhasználó által megadott adatok és célpozíció alapján, továbbá lehetőséget biztosít manuális szerkesztésre és egyéni testreszabásra is.
 A cél, hogy a felhasználó a teljes álláspályázati anyagát egyetlen felületen hozhassa létre és PDF formátumban exportálhassa.
 
 A vágyálom rendszer főbb jellemzői:
 
 * **Felhasználói fiók kezelés:** A rendszer támogatja a regisztrációt, bejelentkezést és jelszó-visszaállítást. A felhasználó adatai biztonságosan, titkosítva tárolódnak.
-* **AI-alapú dokumentumgenerálás:** A mesterséges intelligencia képes a felhasználó által megadott információkból önéletrajzot vagy motivációs levelet létrehozni, strukturált adatformátumban (JSON), amely bármelyik sablonban megjeleníthető.
+* **AI-alapú dokumentumgenerálás:** A mesterséges intelligencia képes a felhasználó által megadott információkból önéletrajzot létrehozni, strukturált adatformátumban (JSON), amely bármelyik sablonban megjeleníthető.
 * **Manuális szerkesztés:** A felhasználó saját maga is létrehozhat vagy módosíthat dokumentumokat az interaktív űrlapok segítségével, akár AI-tól függetlenül is.
 * **PDF exportálás:** Az elkészült dokumentumok PDF formátumban letölthetők, sablonstílus szerint formázva.
 * **Biztonság és adatvédelem:** A rendszer minden kommunikációt titkosított csatornán keresztül végez, és csak a felhasználó által megadott adatokkal dolgozik.
@@ -45,7 +45,7 @@ A jelöltek jelenleg online sablonokat töltenek le és szövegszerkesztőben ma
 
 ## 4. Igényelt üzleti folyamatok
 
-A rendszer által támogatott üzleti folyamatok célja, hogy a felhasználók számára teljes körűen lefedjék az önéletrajz és motivációs levél létrehozásának, kezelésének és exportálásának lépéseit.
+A rendszer által támogatott üzleti folyamatok célja, hogy a felhasználók számára teljes körűen lefedjék az önéletrajz és létrehozásának, kezelésének és exportálásának lépéseit.
 
 ### Felhasználói regisztráció és bejelentkezés
 
@@ -73,17 +73,6 @@ A kiválasztott sablon alapján a backend elkészíti a  dokumentumot, amelyet a
 
 A rendszer lehetőséget biztosít arra is, hogy a felhasználó az önéletrajzát manuálisan, mesterséges intelligencia segítsége nélkül készítse el.
 Ehhez egy űrlap áll rendelkezésre, amely ugyanazokat az adatmezőket tartalmazza, mint az AI-generálás folyamata, azonban minden mezőt a felhasználó tölt ki.
-
-### AI alapú motivációs levél generálás
-
-A motivációs levél létrehozása hasonló módon történik, mint az önéletrajz generálása.
-A felhasználó megadja az alapvető információkat (pl. pozíció, cég neve, releváns tapasztalatok, személyes célok), majd az AI API ezek alapján elkészíti a személyre szabott motivációs levelet.
-A generált szöveg szerkeszthető és PDF-be exportálható.
-
-### Manuális motivációs levél készítés
-
-Az AI-funkciót nem igénylő felhasználók számára a rendszer manuális motivációs levél-készítést is biztosít.
-A felhasználó egy szövegszerkesztőhöz hasonló felületen írhatja meg saját motivációs levelét, amelyet letölthet PDF formátumban.
 
 ### Jelszó visszaállítás
 
@@ -134,46 +123,28 @@ A folyamat során minden adat biztonságosan, titkosított módon kerül kezelé
 * 2.2.3 A manuálisan megadott adatok JSON formátumban kerülnek mentésre.
 * 2.2.4 A felhasználó a CV-t PDF formátumban le tudja tölteni.
 
-### 3. Motivációs levél kezelése
+### 3. Biztonság és adatvédelem
 
-#### 3.1. AI alapú levél generálás
+#### 3.1 Adatbiztonság
 
-* 3.1.1 A rendszer lehetővé teszi a motivációs levél generálását az AI segítségével.
-* 3.1.2 A felhasználó megadhatja a pozíciót, vállalat nevét és egyéb releváns adatokat.
-* 3.1.3 Az AI a megadott adatok alapján szöveges motivációs levelet generál.
-* 3.1.4 A generált levél szerkeszthető
-* 3.1.5 A motivációs levelet PDF formátumban le lehet tölteni.
+* 3.1.1 A jelszavakat hash-elve kell tárolni.
+* 3.1.2 Az AI API kulcsokat csak a szerveroldalon szabad tárolni.
+* 3.1.3 Az adatátvitel HTTPS protokollon keresztül történjen.
 
-#### 3.2. Manuális levél készítés
+### 4. Felhasználói felület és élmény
 
-* 3.2.1 A felhasználó képes saját maga motivációs levelet írni űrlapon keresztül.
-* 3.2.2 A manuálisan megadott szöveg szerkeszthető
-* 3.2.3 A felhasználó a levelet PDF formátumban exportálhatja.
+#### 4.1 Általános követelmények
 
-### 4. Biztonság és adatvédelem
+* 4.1.1 Az alkalmazás reszponzív és mobilbarát legyen.
+* 4.1.2 A felhasználói felület legyen letisztult és áttekinthető.
+* 4.1.3 Az AI hívások ideje alatt betöltés-jelző (loading indicator) jelenjen meg.
+* 4.1.4 Minden művelet után visszajelzést kell adni (siker, hiba stb.).
 
-#### 4.1 Adatbiztonság
+#### 4.2 Felhasználói navigáció
 
-* 4.1.1 A jelszavakat hash-elve kell tárolni.
-* 4.1.2 Az AI API kulcsokat csak a szerveroldalon szabad tárolni.
-* 4.1.3 Az adatátvitel HTTPS protokollon keresztül történjen.
-
-### 5. Felhasználói felület és élmény
-
-#### 5.1 Általános követelmények
-
-* 5.1.1 Az alkalmazás reszponzív és mobilbarát legyen.
-* 5.1.2 A felhasználói felület legyen letisztult és áttekinthető.
-* 5.1.3 Az AI hívások ideje alatt betöltés-jelző (loading indicator) jelenjen meg.
-* 5.1.4 Minden művelet után visszajelzést kell adni (siker, hiba stb.).
-
-#### 5.2 Felhasználói navigáció
-
-* 5.2.1 A főmenüből elérhetők: Új CV generálás, Profil.
-* 5.2.2 A navigáció dinamikusan történik, oldalfrissítés nélkül (SPA).
-* 5.2.3 Hibás útvonal esetén 404-es oldal jelenjen meg.
-
-
+* 4.2.1 A főmenüből elérhetők: Új CV generálás, Profil.
+* 4.2.2 A navigáció dinamikusan történik, oldalfrissítés nélkül (SPA).
+* 4.2.3 Hibás útvonal esetén 404-es oldal jelenjen meg.
 
 ## 6. Használati esetek
 
@@ -188,11 +159,7 @@ Opcionálisan: elfelejtett jelszó folyamat indítása e‑mailes emlékeztetőv
 - Profilkezelés: alapadatok megadása és mentése a későbbi CV/levél generáláshoz (név, elérhetőség, tapasztalat, képzettség, nyelvismeret).
 - CV készítés AI‑val: űrlap kitöltése, backend AI modul hívása, JSON struktúra mentése a fiókba, több sablonból PDF generálása.
 - CV készítés manuálisan: interaktív szerkesztőben szekciók összeállítása, JSON mentés, PDF export.
-- Motivációs levél AI‑al: célpozíció, cég, tapasztalatok megadása, személyre szabott szöveg generálása, szerkesztés és PDF export.
-- Motivációs levél manuálisan: saját szöveg írása az alkalmazásban, későbbi PDF exporttal.
 - Verziókezelés alapjai: több dokumentumváltozat tárolása külön célpozíciókra a JSON‑alapú mentés révén, exportálhatóság biztosítása.
-​
-
 
 ## 7. Megfeleltetés, hogyan fedik le a használati esetek a követelményeket
 
@@ -201,8 +168,6 @@ Vegyük ezeket sorba:
 * Felhasználókezelés: A felhasználók képesek regisztrálni az oldalra felhasználónév, email és jelszó segítségével. Ezek segítségével betud lépni, viszont ha esetleg a jelszót elfelejti a megadott email címre kap egy jelszó-visszaálitási linket.
 
 * Önéletrajz (CV) kezelése: A felhasználó adatait megadva, AI segítségével kapni fog egy CV-t ami képes szerkezteni később. A felhasználó AI segítség nélkül is készíthet CV-t adatai meg adásával.
-
-* Motivációs levél kezelése: A felhasználó megadja az adatokat a munkáról, ahova szeretné ezt motivációs levelet felhasználni.Ezeket az AI értelmezi, majd generál egy motivációs levelet hozzá, amit a felhasználó letölthet PDF formátumban. A felhasználó ezt manuálisan is elkészítheti, majd letöltheti PDF formában
 
 * Biztonság és adatvédelem: Az admin a jelszavakat biztonságosan eltárolja, amihez csak ő férhet hozzá.Ezen felül AI API-t is eltárolja a szerveroldalon.
 
@@ -213,8 +178,6 @@ Vegyük ezeket sorba:
 ## 8. Fogalomszótár
 
 - Önéletrajz (CV): Álláspályázati dokumentum, amely a jelölt személyes adatait, szakmai tapasztalatait, végzettségét és készségeit foglalja össze, a rendszerben JSON‑ból generált és PDF‑be exportált formában.
-
-- Motivációs levél: Pályázati levél, amelyben a jelölt megindokolja alkalmasságát és motivációját egy konkrét pozícióra; AI‑val generálható vagy manuálisan szerkeszthető, majd PDF‑be exportálható.
 
 - AI (mesterséges intelligencia) dokumentumgenerálás: Olyan folyamat, amelyben a backend külső AI szolgáltatást hív a felhasználó által megadott adatok alapján, és strukturált kimenetet (JSON) kap vissza önéletrajz vagy motivációs levél előállításához.
 
