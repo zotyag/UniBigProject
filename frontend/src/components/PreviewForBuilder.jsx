@@ -1,4 +1,6 @@
 import React, { forwardRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { getProfilePicture } from '../api';
 
 const Preview = forwardRef(({ data = {} }, ref) => {
 	const {
@@ -8,6 +10,20 @@ const Preview = forwardRef(({ data = {} }, ref) => {
 		experience = [],
 		skills = {},
 	} = data || {};
+
+	// --- PROFILKÉP LEKÉRÉSE ---
+	// A komponens saját maga intézi!
+	// staleTime: Infinity -> Egyszer letölti, és utána a cache-ből használja, nem kéri le minden rendereléskor
+	const { data: avatarData } = useQuery({
+		queryKey: ['userAvatar'],
+		queryFn: getProfilePicture,
+		staleTime: Infinity,
+		retry: false,
+	});
+
+	// Prioritás: Ha a 'data'-ban van kép (pl. ideiglenes feltöltés), az nyer.
+	// Ha nincs, akkor a szerverről letöltött profilkép.
+	const displayImage = data.profilePictureUrl || avatarData?.url;
 
 	const cellStyle = {
 		padding: '4px',
@@ -35,7 +51,7 @@ const Preview = forwardRef(({ data = {} }, ref) => {
 				lineHeight: '1.5',
 			}}
 		>
-			{/* HEADER (personal_info) - Változatlan */}
+			{/* HEADER (personal_info)*/}
 			<div className='flex justify-between items-start mb-6 border-b-2 border-black pb-4'>
 				<div className='flex-1'>
 					<h1 className='text-3xl font-bold uppercase mb-1'>
@@ -56,14 +72,11 @@ const Preview = forwardRef(({ data = {} }, ref) => {
 					</div>
 				</div>
 
-				{data.profilePictureUrl && (
+				{/* KÉP MEGJELENÍTÉSE */}
+				{displayImage && (
 					<div className='ml-6 flex-shrink-0'>
 						<div className='w-32 h-32 rounded-full overflow-hidden border-2 border-gray-300 flex items-center justify-center'>
-							<img
-								src={data.profilePictureUrl}
-								alt='Profil'
-								className='w-full h-full object-cover'
-							/>
+							<img src={displayImage} alt='Profil' className='w-full h-full object-cover' />
 						</div>
 					</div>
 				)}

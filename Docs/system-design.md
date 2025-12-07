@@ -2,11 +2,11 @@
 
 ## 1. A rendszer célja
 
-A rendszer célja, hogy megkönnyítse az emberek számára az önéletrajz és a motivációs levél megírását. A mai világban az emberek nehezen tudnak olyan dokumentumokat írni ami nyelvtanilag helyes és szakmailag is megállja a helyét. Ezt hivatott megkönnyíteni ez a rendszer, amely mesterséges intelligencia segítségével elkészíti a kívánt önéletrajzot és motivációs levelet. Csupán az adatainak megadásával kaphat egy jó alapot amit alakithat.
+A rendszer célja, hogy megkönnyítse az emberek számára az önéletrajz megírását. A mai világban az emberek nehezen tudnak olyan dokumentumokat írni ami nyelvtanilag helyes és szakmailag is megállja a helyét. Ezt hivatott megkönnyíteni ez a rendszer, amely mesterséges intelligencia segítségével elkészíti a kívánt önéletrajzot. Csupán az adatainak megadásával kaphat egy jó alapot amit alakithat.
 
 Emellett azoknak is jutt hely, akik nem bíznak a mesterséges intelligenciában, vagy szimplán jobban szeretik saját maguk megírni ezen dokumentumokat. Az oldal nekik sablonokat tartogat, amik közül kiválaszthatják a nekik tetszöt.
 
-A cél mindkét esetben az lenne, hogy egy szép, rendezett, összeszedett és átlátható önéletrajzot vagy motivációs levelet tudjon küldeni a munkaadónak.
+A cél mindkét esetben az lenne, hogy egy szép, rendezett, összeszedett és átlátható önéletrajzot tudjon küldeni a munkaadónak.
 
 ## 2. Üzleti folyamatok modellje
 
@@ -52,7 +52,7 @@ A cél mindkét esetben az lenne, hogy egy szép, rendezett, összeszedett és �
 
  - Felhasználó
     - Regisztrálni tud és az itt megadott adatokkal be tud jelentkezni
-    - Ki tudja választani, hogy önéletrajzot vagy motivációs levelet szertne készíteni
+    - Ki tudja választani, hogy önéletrajzot szeretne készíteni
     - Ki tudja választani, hogy mesterséges intelligencia segítségével vagy manuálisan készíti el a bizonyos dokumentumot
     - Megtudja adni a mesterséges intelligenciának a kért adatokat és feldolgozás után a kitöltöt dokumentumot visszaküldi sablon formában
     - Az elkészített dokumentumokat letudja tölteni az eszközére
@@ -65,14 +65,9 @@ A cél mindkét esetben az lenne, hogy egy szép, rendezett, összeszedett és �
 
 - Főoldal
     - CV készítés
-    - Motivációs levél készítés
     - Kijelentkezés
 
 - CV készítés
-    - Mesterséges inteligenciával
-    - Manuálisan
-
-- Motivációs levél készítés
     - Mesterséges inteligenciával
     - Manuálisan
 
@@ -107,7 +102,6 @@ Az alkalmazás webes platformra készül, amely elsősorban desktop, de mobil es
 - Education
 - Skill
 - Language
-- CoverLetter
 - Template
 - AIRequest
 
@@ -203,7 +197,6 @@ Az alkalmazás webes platformra készül, amely elsősorban desktop, de mobil es
 
 - Documents:
   - CV: POST /cv (AI), POST /cv/manual, GET /cv/:id, PUT /cv/:id, GET /cv, POST /cv/:id/export.
-  - Cover letter: POST /letters (AI), POST /letters/manual, GET/PUT /letters/:id, GET /letters, POST /letters/:id/export.
 
 - Templates: GET /templates, GET /templates/:id (admin: POST/PUT/DELETE).
 
@@ -237,13 +230,13 @@ Indexek: unique(email), unique(username), idx_users_role.
 - **templates:** id (PK), code UNIQUE, name, kind ENUM('cv','cover_letter'), is_active, created_at.
 *Megjegyzés: schema_json nem kötelező az MVP-hez.*
 
-- **document_index:** id (PK), user_id (FK → users.id), doc_type ENUM('cv','cover_letter'), title, slug UNIQUE per user, mongo_document_id (ObjectId hex), current_version INT, updated_at, created_at.
+- **document_index:** id (PK), user_id (FK → users.id), doc_type ENUM('cv'), title, slug UNIQUE per user, mongo_document_id (ObjectId hex), current_version INT, updated_at, created_at.
 Indexek: unique(user_id, slug), idx_doc_user, idx_doc_type, idx_doc_updated_at.
 ​
 
 ### MongoDB kollekciók
 
-- **documents:** _id ObjectId, userId (Postgres users.id), type: 'cv'|'cover_letter', title, templateCode, contentJSON, state: 'draft'|'final', currentVersion, createdAt, updatedAt
+- **documents:** _id ObjectId, userId (Postgres users.id), type: 'cv', title, templateCode, contentJSON, state: 'draft'|'final', currentVersion, createdAt, updatedAt
 Indexek: { userId: 1, type: 1, updatedAt: -1 }, opcionális { title: "text" }.
 
 - **document_versions** _id ObjectId, documentId (ref documents._id), version (int), contentJSON, changeNote, createdAt, createdBy (userId).

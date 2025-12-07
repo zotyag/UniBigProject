@@ -45,15 +45,6 @@ const ManualCVBuilder = () => {
 	});
 
 	useEffect(() => {
-		// if (existingDoc) {
-		// 	// Itt majd a Dashboardnál javított logika szerint kell kinyerni az adatot
-		// 	// De ha új struktúrában mentünk, akkor simán betöltődik.
-		// 	// Egyelőre feltételezzük, hogy a user_data már a jó formátumban van.
-		// 	const content = existingDoc.content_json || existingDoc.user_data || {};
-		// 	setDocTitle(existingDoc.title || '');
-		// 	setCvData((prev) => ({ ...prev, ...content }));
-		// }
-
 		if (existingDoc) {
 			// JAVÍTÁS: Az api.js már normalizálta az adatot, és a .cvData mezőbe tette!
 			// Ha esetleg mégsem, akkor próbáljuk a régiekből.
@@ -106,16 +97,6 @@ const ManualCVBuilder = () => {
 	// Summary
 	const handleSummaryChange = (val) => {
 		setCvData((prev) => ({ ...prev, summary: val }));
-	};
-
-	const handleImageUpload = (e) => {
-		const file = e.target.files[0];
-		if (file) {
-			const reader = new FileReader();
-			reader.onloadend = () =>
-				setCvData((prev) => ({ ...prev, profilePictureUrl: reader.result }));
-			reader.readAsDataURL(file);
-		}
 	};
 
 	// Listák (Experience, Education)
@@ -228,10 +209,6 @@ const ManualCVBuilder = () => {
 										value={cvData.personal_info.website}
 										onChange={(e) => handleInfoChange('website', e.target.value)}
 									/>
-								</Form.Group>
-								<Form.Group className='mb-3'>
-									<Form.Label>Kép</Form.Label>
-									<Form.Control type='file' onChange={handleImageUpload} />
 								</Form.Group>
 							</Accordion.Body>
 						</Accordion.Item>
@@ -428,20 +405,28 @@ const ManualCVBuilder = () => {
 						</Accordion.Item>
 
 						{/* 5. SKILLS (Objektum alapú!) */}
+						{/* 5. KÉSZSÉGEK - JAVÍTVA (defaultValue + onBlur) */}
 						<Accordion.Item eventKey='4'>
 							<Accordion.Header>Készségek</Accordion.Header>
 							<Accordion.Body>
 								<Form.Group className='mb-2'>
-									<Form.Label>Kompetenciák</Form.Label>
+									<Form.Label>Kompetenciák (vesszővel)</Form.Label>
 									<Form.Control
 										as='textarea'
 										rows={2}
+										// Fontos: defaultValue-t használunk, így nem frissül minden karakternél a UI
+										// A .join(', ') biztosítja, hogy vesszővel elválasztva jelenjen meg
 										defaultValue={cvData.skills.core_competencies.join(', ')}
+										// Csak akkor mentünk a state-be, ha a user befejezte az írást!
 										onBlur={(e) => handleSkillChange('core_competencies', e.target.value)}
+										// Ha az AI vagy betöltés miatt változik a háttérben az adat,
+										// a 'key' segít újrarenderelni a mezőt
+										key={`core-${cvData.skills.core_competencies.join(',')}`}
 									/>
 								</Form.Group>
+
 								<Form.Group className='mb-2'>
-									<Form.Label>Szoftverek</Form.Label>
+									<Form.Label>Szoftverek (vesszővel)</Form.Label>
 									<Form.Control
 										as='textarea'
 										rows={2}
@@ -449,15 +434,18 @@ const ManualCVBuilder = () => {
 										onBlur={(e) =>
 											handleSkillChange('software_proficiency', e.target.value)
 										}
+										key={`soft-${cvData.skills.software_proficiency.join(',')}`}
 									/>
 								</Form.Group>
+
 								<Form.Group>
-									<Form.Label>Nyelvek</Form.Label>
+									<Form.Label>Nyelvek (vesszővel)</Form.Label>
 									<Form.Control
 										as='textarea'
 										rows={2}
 										defaultValue={cvData.skills.language_fluency.join(', ')}
 										onBlur={(e) => handleSkillChange('language_fluency', e.target.value)}
+										key={`lang-${cvData.skills.language_fluency.join(',')}`}
 									/>
 								</Form.Group>
 							</Accordion.Body>
