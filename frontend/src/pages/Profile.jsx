@@ -12,6 +12,7 @@ import {
 	getProfilePicture,
 } from '../api';
 import { Form, Button, Alert, Card, Badge, InputGroup, Spinner } from 'react-bootstrap';
+import { useAuthStore } from '../stores/authStore';
 
 const Profile = () => {
 	// --- HOOKS ---
@@ -66,12 +67,15 @@ const Profile = () => {
 
 	// --- Mutations ---
 
+	const fetchCurrentUser = useAuthStore((s) => s.fetchCurrentUser);
+
 	const updateProfileMutation = useMutation({
 		mutationFn: updateUserProfile,
 		onSuccess: () => {
 			setMessage({ type: 'success', text: 'Profil sikeresen frissítve!' });
 			setPassword('');
 			setConfirmPassword('');
+			fetchCurrentUser();
 			setValidationErrors({}); // Hibák törlése siker esetén
 			queryClient.invalidateQueries(['userProfile']);
 		},
@@ -134,10 +138,19 @@ const Profile = () => {
 
 	const validateForm = () => {
 		let errors = {};
+		const usernamePattern = new RegExp('^[a-zA-Z0-9_]{8,24}$');
 		// Password complexity regex: min 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 special char
 		const passwordPattern = new RegExp(
 			'^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&\\.])[A-Za-z\\d@$!%*?&\\.]{8,32}$',
 		);
+
+		// Username validation
+		if (!username) {
+			errors.username = 'A felhasználónév nem lehet üres.';
+		} else if (!usernamePattern.test(username)) {
+			errors.username =
+				'A felhasználónévnek 8-24 karakter hosszúnak kell lennie, és csak betűket, számokat és aláhúzásjelet tartalmazhat.';
+		}
 
 		if (password) {
 			if (!oldPassword) {
@@ -305,8 +318,12 @@ const Profile = () => {
 											type='text'
 											value={username}
 											onChange={(e) => setUsername(e.target.value)}
+											isInvalid={!!validationErrors.username}
 											className='bg-gray-50 border-gray-300 focus:bg-white transition-colors'
 										/>
+										<Form.Control.Feedback type='invalid'>
+											{validationErrors.username}
+										</Form.Control.Feedback>
 									</Form.Group>
 
 									<Form.Group className='mb-6'>
