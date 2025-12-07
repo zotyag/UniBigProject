@@ -150,8 +150,15 @@ const Dashboard = () => {
 												Szerkesztés
 											</Button>
 											<Button
+												variant='info'
+												className='flex-fill btn-sm'
+												onClick={() => navigate(`/cvgenerator/${doc.id}`)}
+											>
+												AI szerkesztés
+											</Button>
+											<Button
 												variant='outline-secondary'
-												className='w-100 mt-auto'
+												className='flex-fill btn-sm'
 												onClick={() => handleOpenPreview(doc.id)}
 												disabled={fetchDocMutation.isPending}
 											>

@@ -2,6 +2,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { v4 as uuidv4 } from 'uuid';
 import ChatSession from '../models/mongodb/ChatSession.js';
+import { DocumentService } from './document.service.js';
 
 export class AIChatService {
 	// Standard CV template, remains unchanged
@@ -216,21 +217,33 @@ Generate and return ONLY the single question you should ask the user next. Do no
 	/**
 	 * Starts a new chat session.
 	 */
-	static async startChatSession(userId, initialMessage, docType, apiKey) {
+	static async startChatSession(userId, initialMessage, docType, apiKey, existingDocId = null) {
 		const sessionId = uuidv4();
+		let initialCvData;
+		let firstQuestion;
 
-		// 1. Perform an initial CV update based on the user's first message.
-		const initialCvData = await this._updateCvWithUserResponse(
-			this.EMPTY_CV_TEMPLATE,
-			'Please provide me with some initial details to start building your CV.',
-			initialMessage,
-			apiKey,
-		);
+		if (existingDocId) {
+			try {
+				const document = await DocumentService.getDocumentDetail(existingDocId, userId);
+				initialCvData = document && document.content_json ? document.content_json : this.EMPTY_CV_TEMPLATE;
+			} catch (error) {
+				console.error(`Failed to load existing document ${existingDocId}:`, error);
+				initialCvData = this.EMPTY_CV_TEMPLATE;
+			}
+			// Generate a question based on the loaded data
+			firstQuestion = await this._generateNextQuestion(initialCvData, docType, apiKey);
+		} else {
+			// This is for new CVs - process the initial message
+			initialCvData = await this._updateCvWithUserResponse(
+				this.EMPTY_CV_TEMPLATE,
+				'Please provide me with some initial details to start building your CV.',
+				initialMessage,
+				apiKey,
+			);
+			firstQuestion = await this._generateNextQuestion(initialCvData, docType, apiKey);
+		}
 
-		// 2. Generate the first follow-up question.
-		const firstQuestion = await this._generateNextQuestion(initialCvData, docType, apiKey);
-
-		// 3. Create and save the new chat session.
+		// Create and save the new chat session.
 		const chatSession = await ChatSession.create({
 			user_id: userId,
 			session_id: sessionId,
@@ -238,17 +251,16 @@ Generate and return ONLY the single question you should ask the user next. Do no
 			status: 'active',
 			current_cv_data: initialCvData,
 			fields_collected: this.getCollectedFields(initialCvData),
-			// Store only the latest question to guide the next step.
 			conversation_history: [{ role: 'model', parts: [{ text: firstQuestion }] }],
 		});
 
-		// 4. Return the initial state to the frontend.
+		// Return the initial state to the frontend.
 		return {
 			session_id: sessionId,
 			message: firstQuestion,
 			cv_data: initialCvData,
 			progress: this.calculateProgress(chatSession.fields_collected),
-			is_complete: false,
+			is_complete: this.calculateProgress(chatSession.fields_collected) >= 100,
 		};
 	}
 

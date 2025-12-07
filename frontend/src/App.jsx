@@ -39,7 +39,7 @@ function App() {
 
                        
                         <Route 
-                            path='/cvgenerator' 
+                            path='/cvgenerator/:docId?' 
                             element={
                                 <ProtectedRoute>
                                     <CVGenerator />

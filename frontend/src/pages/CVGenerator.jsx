@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useMutation } from '@tanstack/react-query';
+import { useParams } from 'react-router-dom';
 import { startChatSession, sendChatMessage, finalizeChatSession } from '../api';
 import Preview from '../components/PreviewForBuilder'; // Fontos: A jó preview-t használjuk
 import { Modal, Button } from 'react-bootstrap';
@@ -11,6 +12,7 @@ import './styles/app.css';
 const API_BASE_URL = 'http://localhost:3000/api/v1';
 
 function CVGenerator() {
+	const { docId } = useParams();
 	useEffect(() => {
 		document.title = 'CV Generator';
 	}, []);
@@ -100,17 +102,26 @@ function CVGenerator() {
 		const startChatSession = async () => {
 			setIsLoading(true);
 			try {
-				const firstMessage = "Hi, I'd like to build a CV.";
+				const firstMessage = docId
+					? 'Szia, szeretném szerkeszteni a meglévő dokumentumomat.'
+					: 'Szia, szeretnék egy új CV-t készíteni.';
+
+				const body = {
+					initial_message: firstMessage,
+					doc_type: 'cv',
+				};
+
+				if (docId) {
+					body.existing_doc_id = docId;
+				}
+
 				const response = await fetch(`${API_BASE_URL}/chat/start`, {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json',
 						Authorization: `Bearer ${accessToken}`,
 					},
-					body: JSON.stringify({
-						initial_message: firstMessage,
-						doc_type: 'cv',
-					}),
+					body: JSON.stringify(body),
 				});
 
 				if (!response.ok) throw new Error('Failed to start chat');
@@ -134,7 +145,7 @@ function CVGenerator() {
 		};
 
 		startChatSession();
-	}, [accessToken]);
+	}, [accessToken, docId]);
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();

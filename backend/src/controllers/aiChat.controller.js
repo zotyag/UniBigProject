@@ -4,7 +4,7 @@ import { decryptAPIKey } from '../utils/encryption.js';
 
 export const startChat = async (req, res, next) => {
     try {
-        const { initial_message, doc_type } = req.body;
+        const { initial_message, doc_type, existing_doc_id } = req.body;
 
         if (!req.user.gemini_api_key_encrypted) {
             return res.status(400).json({
@@ -18,7 +18,8 @@ export const startChat = async (req, res, next) => {
             req.user.id,
             initial_message,
             doc_type,
-            apiKey
+            apiKey,
+            existing_doc_id
         );
 
         res.status(201).json(result);
