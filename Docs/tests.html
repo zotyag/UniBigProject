@@ -212,8 +212,67 @@
         </thead>
         <tbody>
             <tr>
-                <td>Dashboard elemek megjelenítése</td>
-                <td>Minden dashboard elem helyesen jelenik meg</td>
+                <td>Felhasználó dokumentumok listázása</td>
+                <td>A felhasználó által készített dokumentumok megjelennek a dashboard-on (ha vannak)</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>Dokumentum megtekintés gomb megnyomása</td>
+                <td>Felugrik egy dokumentum előnézet modal, amiben az adott dokumentum tartalma hiánytalanul szerepel</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>Dokumentum szerkesztés gomb megnyomása</td>
+                <td>Az oldal átirányít a szerkesztő oldalra, a kiválasztott dokumentum adataival inicializálva.</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>Dokumentum AI szerkesztés gomb megnyomása</td>
+                <td>Az oldal átirányít az AI generáló oldalra, a kiválasztott dokumentum adataival inicializálva.</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>Kézi szerkesztő gomb megnyomása</td>
+                <td>Az oldal átirányít a szerkesztő oldalra egy üres lappal</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>AI Generátor gomb megnyomása</td>
+                <td>Az oldal átirányít az AI generátor oldalra, egy üres lappal</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>Dokumentum törlés gomb megnyomása</td>
+                <td>Az adott dokumentum eltűnik a dashboard-ról és törlődik az adatbázisból</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Navbar</h3>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Leírás</th>
+                <th>Elvárt eredmény</th>
+                <th>Státusz</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Kijelentkezés gomb megnyomása</td>
+                <td>A felhasználó kijelentkezik és átirányít a bejelentkezési oldalra</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>Settings gomb megnyomása</td>
+                <td>Az oldal átirányít a profil oldalra</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>Dashboard gomb megnyomása</td>
+                <td>Az oldal átirányít a dashboard oldalra</td>
                 <td>Siker</td>
             </tr>
         </tbody>
@@ -231,8 +290,38 @@
         </thead>
         <tbody>
             <tr>
-                <td>Új CV létrehozása és mentése</td>
-                <td>Sikeres CV létrehozás és mentés az adatbázisba</td>
+                <td>Üres beviteli mező szerkesztése</td>
+                <td>Az adott szekció megjelenik a dokumentum előnézeten, a megadott adatokkal együtt</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>Új blokk beszúrása ("+Új gomb")</td>
+                <td>Az adott szekcióhoz új elem kerül beszúrásra a szerkesztő és előnézet blokkokban egyaránt</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>Oldal betöltése létező dokumentummal</td>
+                <td>A szerkesztő és előnézet rész az adott dokumentum adataival inicializálódik</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>Szerkesztő URL-ben dokumentum ID beszúrása (vagy kicserélése) saját dokumentum ID-jére</td>
+                <td>A dokumentum megnyílik szerkesztésre és a szerkesztő és előnézet rész az adott dokumentum adataival inicializálódik</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>Szerkesztő URL-ben dokumentum ID beszúrása (vagy kicserélése) idegen dokumentum ID-jére</td>
+                <td>A dokumentum nem kerül betöltésre, a szerkesztő üres beviteli mezőkkel és előnézettel nyílik meg</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>Mentés gomb megnyomása</td>
+                <td>A dokumentum adatai felkerülnek az adatbázisba, ezután az oldap átirányít a dashboard-ra</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>PDF gomb megnyomása</td>
+                <td>Felugrik egy PDF nyomtatás ablak, ahol a PDF és az előnézet tartalma és stílusa is azonos</td>
                 <td>Siker</td>
             </tr>
         </tbody>
@@ -250,8 +339,33 @@
         </thead>
         <tbody>
             <tr>
-                <td>CV generálása mentett adatokból</td>
-                <td>Sikeres PDF generálás a mentett CV adatok alapján</td>
+                <td>Új üzenet írása a chatablakba</td>
+                <td>Az AI feldolgozza a felhasználó üzenetét, majd annak tartalma alapján válaszol</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>Releváns információ megadása</td>
+                <td>Amennyiben a felhasználó CV építés szempontjából releváns információt ad, azt az AI feldolgozza és bekerül az előnézetbe</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>Oldal betöltése szerkesztés módban</td>
+                <td>A szerkesztett dokumentum adatai betöltődnek az előnézetbe, illetve ezeket az AI is tudja olvasni.</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>Szerkesztés esetén URL-ben dokumentum ID beszúrása (vagy kicserélése) saját dokumentum ID-jére</td>
+                <td>A dokumentum megnyílik szerkesztésre és az előnézet rész az adott dokumentum adataival inicializálódik, az AI látja a kért dokumentum adatait</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>Szerkesztés esetén URL-ben dokumentum ID beszúrása (vagy kicserélése) idegen dokumentum ID-jére</td>
+                <td>A dokumentum nem kerül betöltésre, az oldal üres előnézettel nyílik meg, az AI nem ismeri a kért dokumentum adatait</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>Finalize gomb megnyomása</td>
+                <td>A dokumentum véglegesítése után az felkerül az adatbázisba. Ezután az oldal visszadob a dashboard-ra, ahol az új dokumentum a régebbiekkel együtt megtekinthető</td>
                 <td>Siker</td>
             </tr>
         </tbody>
