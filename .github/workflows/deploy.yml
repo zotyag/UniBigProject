@@ -23,7 +23,7 @@ jobs:
       - name: Install and build Frontend
         working-directory: ./frontend
         env:
-          VITE_API_BASE_URL: 'httpss://smartercv.azurewebsites.net'
+          VITE_API_BASE_URL: 'https://smartercv.azurewebsites.net'
         run: |
           npm install
           npm run build 
