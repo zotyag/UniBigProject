@@ -7,9 +7,8 @@ import { Modal, Button } from 'react-bootstrap';
 import { useAuthStore } from '../stores/authStore.js';
 import ReactMarkdown from 'react-markdown';
 import './styles/document.css';
+import { BASE_URL as API_BASE_URL } from '../api.js';
 import './styles/app.css';
-
-const API_BASE_URL = 'http://localhost:3000/api/v1';
 
 function CVGenerator() {
 	const { docId } = useParams();

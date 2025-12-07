@@ -4,7 +4,7 @@
  */
 
 const getToken = () => localStorage.getItem('access_token');
-const BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000') + '/api/v1';
+export const BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000') + '/api/v1';
 
 // --- SEGÉDFÜGGVÉNY: ADAT NORMALIZÁLÓ ---
 // Ez a függvény fordítja le a DB formátumot a Preview formátumra
