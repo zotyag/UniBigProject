@@ -16,16 +16,38 @@ import aiChatRoutes from './routes/aiChat.routes.js';
 
 const app = express();
 
+// --- Explicit CORS Configuration ---
+const allowedOrigins = [
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'https://smartercv.azurewebsites.net' // Production URL
+];
+const corsOptions = {
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+
+        if (allowedOrigins.indexOf(origin) === -1) {
+            const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+            return callback(new Error(msg), false);
+        }
+        return callback(null, true);
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+};
+app.use(cors(corsOptions));
+// Handle preflight requests
+app.options('*', cors(corsOptions));
+
+
 // --- ES Module compatibility for __dirname ---
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Security middleware
 app.use(helmet());
-app.use(cors({
-    origin: config.CORS_ORIGIN,
-    credentials: true
-}));
 // Rate limiting
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
