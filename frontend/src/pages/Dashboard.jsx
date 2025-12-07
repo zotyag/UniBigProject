@@ -31,16 +31,6 @@ const Dashboard = () => {
 		queryFn: () => fetchDocuments(),
 	});
 
-	// const fetchDocMutation = useMutation({
-	// 	mutationFn: fetchDocumentById,
-	// 	onSuccess: (data) => {
-	// 		const cvData = extractCvData(data);
-	// 		console.log('Megnyitott CV adatok:', cvData);
-	// 		setSelectedDoc({ ...data, cvData });
-	// 		setShowPreview(true);
-	// 	},
-	// 	onError: () => alert('Nem sikerült betölteni a dokumentumot.'),
-	// });
 	const fetchDocMutation = useMutation({
 		mutationFn: fetchDocumentById,
 		onSuccess: (data) => {
