@@ -55,12 +55,12 @@ app.use('/api/v1/chat', aiChatRoutes);
 
 // --- Serve static frontend files ---
 // Assuming frontend build is in `backend/dist`
-app.use(express.static(path.join(__dirname, '../../dist')));
+app.use(express.static(path.join(__dirname, '../dist')));
 
 // --- SPA Fallback ---
 // Any requests not handled by API routes will serve the frontend's index.html
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../../dist', 'index.html'));
+    res.sendFile(path.join(__dirname, '../dist', 'index.html'));
 });
 
 // Error handling
