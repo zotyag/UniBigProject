@@ -49,6 +49,9 @@ const ManualCVBuilder = () => {
 	});
 
 	// -- - EFFECTS ---
+	useEffect(() => {
+		document.title = 'SmartCV - Manual CV Builder';
+	}, []);
 
 	// Load existing document data into state
 	useEffect(() => {

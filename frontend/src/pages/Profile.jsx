@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, use } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -52,6 +52,9 @@ const Profile = () => {
 	});
 
 	// --- Effects ---
+	useEffect(() => {
+		document.title = 'SmartCV - Profile';
+	}, []);
 
 	// Sync sate with fetched user data
 	useEffect(() => {

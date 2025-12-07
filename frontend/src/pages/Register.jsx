@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 function Register() {
 	useEffect(() => {
-		document.title = 'Register';
+		document.title = 'SmartCV - Register';
 	}, []);
 
 	const navigate = useNavigate();

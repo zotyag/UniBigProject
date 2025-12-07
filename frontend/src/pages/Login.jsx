@@ -4,7 +4,7 @@ import { useAuthStore } from '../stores/authStore.js';
 
 function Login() {
 	useEffect(() => {
-		document.title = 'Login';
+		document.title = 'SmartCV - Login';
 	}, []);
 
 	const [formData, setFormData] = useState({ email: '', password: '' });

@@ -60,7 +60,7 @@ function CVGenerator() {
 	// --- Effects ---
 
 	useEffect(() => {
-		document.title = 'CV Generator';
+		document.title = 'SmartCV - CV Generator';
 	}, []);
 
 	// Auto scroll
