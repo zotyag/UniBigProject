@@ -2,6 +2,9 @@
 
 An AI-powered web application that helps users create professional CVs and cover letters with ease.
 
+## Live DEMO
+
+[smartercv.azurewebsites.net](https://smartercv.azurewebsites.net).
 
 
 ## Overview
