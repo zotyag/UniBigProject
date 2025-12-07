@@ -49,39 +49,6 @@ function AppNavbar() {
 					</Nav>
 
 					<Nav className='ms-auto'>
-						{/* <Button variant='secondary' className='text-white' onClick={goToLogin}>
-							Login
-						</Button> */}
-						{/*? Replacement login button for when login and user session are both properly implemented */}
-						{/* <Nav.Link className='fw-semibold fs-5 !text-white'>
-							{user ? (
-								<>
-									<span className='mr-4'>Welcome, {user.user.username}</span>
-									<button onClick={logout} className='bg-red-500 px-3 py-1 rounded'>
-										Logout
-									</button>
-								</>
-							) : (
-								<button onClick={goToLogin} className='bg-red-500 px-3 py-1 rounded'>
-									Login
-								</button>
-							)}
-						</Nav.Link> */}
-						{/* {user ? (
-							<>
-								<span className='text-white me-3 align-self-center'>
-									Welcome, {user.username}
-								</span>
-								<Button variant='outline-light' className='text-white' onClick={logout}>
-									Logout
-								</Button>
-							</>
-						) : (
-							<Button variant='secondary' className='text-white' onClick={goToLogin}>
-								Login
-							</Button>
-						)} */}
-
 						<Nav className='ms-auto'>
 							{user ? (
 								<NavDropdown
