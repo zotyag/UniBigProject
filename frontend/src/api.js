@@ -4,6 +4,7 @@
  */
 
 const getToken = () => localStorage.getItem('access_token');
+const getRefreshToken = () => localStorage.getItem('refresh_token');
 const BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000') + '/api/v1';
 
 // --- SEGÉDFÜGGVÉNY: ADAT NORMALIZÁLÓ ---
@@ -66,7 +67,7 @@ const normalizeDocumentData = (rawData) => {
 	return { ...rawData, cvData };
 };
 
-// --- FETCH WRAPPER (Marad változatlan) ---
+// --- FETCH WRAPPER  ---
 const apiFetch = async (endpoint, options = {}) => {
 	const token = getToken();
 	const headers = {
@@ -75,13 +76,64 @@ const apiFetch = async (endpoint, options = {}) => {
 		...options.headers,
 	};
 
-	const response = await fetch(`${BASE_URL}${endpoint}`, { ...options, headers });
+	let response = await fetch(`${BASE_URL}${endpoint}`, { ...options, headers });
+
+	// if (response.status === 401) {
+	// 	console.warn('Lejárt token...');
+	// 	localStorage.removeItem('access_token');
+	// 	throw new Error('Nincs bejelentkezve.');
+	// }
 
 	if (response.status === 401) {
-		console.warn('Lejárt token...');
-		localStorage.removeItem('access_token');
-		throw new Error('Nincs bejelentkezve.');
+		const refreshToken = getRefreshToken();
+
+		if (refreshToken) {
+			console.log('Access Token lejárt. Frissítés megkísérlése...');
+
+			try {
+				const refreshResponse = await fetch(`${BASE_URL}/auth/refresh`, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ refresh_token: refreshToken }),
+				});
+
+				if (refreshResponse.ok) {
+					const data = await refreshResponse.json();
+
+					localStorage.setItem('access_token', data.access_token);
+
+					if (data.refresh_token) localStorage.setItem('refresh_token', data.refresh_token);
+
+					console.log('Token sikeresen frissítve! Kérés ismétlése...');
+
+					// Kérés megismétlése az ÚJ tokennel
+					const newHeaders = {
+						...headers,
+						Authorization: `Bearer ${data.access_token}`,
+					};
+
+					response = await fetch(`${BASE_URL}${endpoint}`, {
+						...options,
+						headers: newHeaders,
+					});
+				} else {
+					throw new Error('Refresh token lejárt');
+				}
+			} catch (error) {
+				// Refresh hiba -> Kijelentkeztetés
+				console.warn('Sikertelen token frissítés. Kijelentkeztetés...');
+				localStorage.removeItem('access_token');
+				localStorage.removeItem('refresh_token');
+				window.location.href = '/login';
+				throw new Error('Munkamenet lejárt. Kérjük, jelentkezzen be újra.');
+			}
+		} else {
+			// Nincs refresh token -> Kijelentkeztetés
+			localStorage.removeItem('access_token');
+			throw new Error('Nincs bejelentkezve.');
+		}
 	}
+
 	if (response.status === 204) return null;
 
 	if (!response.ok) {

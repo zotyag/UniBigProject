@@ -74,6 +74,7 @@ function Login() {
 			if (res.ok) {
 				// save token + update global store so Navbar updates immediately
 				useAuthStore.getState().setToken(data.access_token);
+				localStorage.setItem('refresh_token', data.refresh_token);
 				if (data.user) {
 					useAuthStore.getState().setUser(data.user);
 				} else {
