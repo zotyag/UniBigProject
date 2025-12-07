@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useReactToPrint } from 'react-to-print';
@@ -26,6 +26,10 @@ const Dashboard = () => {
 			day: 'numeric',
 		});
 	};
+
+	useEffect(() => {
+		document.title = 'SmartCV - Dashboard';
+	}, []);
 
 	// --- Queries ---
 

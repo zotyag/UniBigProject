@@ -27,8 +27,140 @@
 
 <body>
     <h1>SmartCV</h1>
+    <hr>
 
     <h2>Funkcionális teszt</h2>
+
+    <h3>Regisztráció</h3>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Leírás</th>
+                <th>Elvárt eredmény</th>
+                <th>Státusz</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Foglalt felhasználónév használata</td>
+                <td>Nem lehetséges foglalt felhasználónév használata, hibát dob</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+        <tbody>
+            <tr>
+                <td>Minden helyesen van írva és a felhasználónév egyedi</td>
+                <td>Sikeres regisztráció és átirányítás a bejelentkezési oldalra</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+        <tbody>
+            <tr>
+                <td>Nincs felhasználónév megadva</td>
+                <td>Nem lehet üres a felhasználónév mező, hibát dob</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+        <tbody>
+            <tr>
+                <td>Túl rövid a felhasználónév</td>
+                <td>Nem éri el a 8 karakter hosszt, hibát dob</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+        <tbody>
+            <tr>
+                <td>Túl hosszú a felhasználónév</td>
+                <td>A 32 karakternél hosszabb, hibát dob</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+        <tbody>
+            <tr>
+                <td>A felhasználónév speciális karaktert tartalmaz </td>
+                <td>Nem lehet speciális karaktert írni, hibát dob</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+        <tbody>
+            <tr>
+                <td>Nincs jelszó megadva</td>
+                <td>Nem lehet üres a jelszó mező, hibát dob</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+        <tbody>
+            <tr>
+                <td>Túl rövid a jelszó</td>
+                <td>Nem éri el a 8 karakter hosszt, hibát dob</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+        <tbody>
+            <tr>
+                <td>Túl hosszú a jelszó</td>
+                <td>A 32 karakternél hosszabb, hibát dob</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+        <tbody>
+            <tr>
+                <td>Minden helyesen van írva és a jelszó jó formátumban van</td>
+                <td>Sikeres regisztráció és átirányítás a bejelentkezési oldalra</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+        <tbody>
+            <tr>
+                <td>A jelszót a megkért karakterek nélkül adjuk meg</td>
+                <td>Nagy-kis betűk, szám és speciális karakter kihagyása a jelszóból, hibát dob</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+        <tbody>
+            <tr>
+                <td>A két jelszó egyezik</td>
+                <td>Sikeres regisztráció és átirányítás a bejelentkezési oldalra</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+        <tbody>
+            <tr>
+                <td>A két jelszó nem egyezik</td>
+                <td>Hibát kapunk mivel a két jelszó formátuma nem egyezik</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+        <tbody>
+            <tr>
+                <td>Foglalt email használata</td>
+                <td>Foglalt emailt nem lehet használni, hibát dob</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+        <tbody>
+            <tr>
+                <td>Hibás email formátum</td>
+                <td>Rossz email formátum használata, hibát dob</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+        <tbody>
+            <tr>
+                <td>Minden helyesen van írva és az email formátum is helyes</td>
+                <td>Sikeres regisztráció és átirányítás a bejelentkezési oldalra</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+        <tbody>
+            <tr>
+                <td>Login oldalra lépés a click here-re kattintva ha van profilod</td>
+                <td>Átirányít a login oldalra</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+    </table>
 
     <h3>Bejelentkezés</h3>
 
@@ -42,12 +174,393 @@
         </thead>
         <tbody>
             <tr>
-                <td>Helyes felhasználónév és jelszó megadása</td>
+                <td>Nincs jelszó megadva</td>
+                <td>Nem lehet üres a jelszó mező, hibát dob</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+        <tbody>
+            <tr>
+                <td>Túl rövid a jelszó</td>
+                <td>Nem éri el a 8 karakter hosszt, hibát dob</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+        <tbody>
+            <tr>
+                <td>Túl hosszú a jelszó</td>
+                <td>A 32 karakternél hosszabb, hibát dob</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+        <tbody>
+            <tr>
+                <td>Minden helyesen van írva és a jelszó jó formátumban van</td>
                 <td>Sikeres bejelentkezés</td>
+                <td>Siker</td>
+            </tr>
+        <tbody>
+            <tr>
+                <td>Foglalt email használata</td>
+                <td>Foglalt emailt nem lehet használni, hibát dob</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+        <tbody>
+            <tr>
+                <td>Hibás email formátum</td>
+                <td>Rossz email formátum használata, hibát dob</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+        <tbody>
+            <tr>
+                <td>Minden helyesen van írva és az email formátum is helyes</td>
+                <td>Sikeres regisztráció és átirányítás a bejelentkezési oldalra</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+        <tbody>
+            <tr>
+                <td>Register oldalra lépés a click here-re kattintva ha még nincs profilod</td>
+                <td>Átirányít a register oldalra</td>
                 <td>Siker</td>
             </tr>
         </tbody>
     </table>
+
+    <h3>Profile oldal</h3>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Leírás</th>
+                <th>Elvárt eredmény</th>
+                <th>Státusz</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Vissza a főoldalra gomb megnyomása</td>
+                <td>Átirányít a főoldalra a dashboard-ra</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+        <tbody>
+            <tr>
+                <td>Felhasználónév váltás már létező felhasználónévre</td>
+                <td>Nem lehet már létező felhasználónévre cserélni a sajátunkat</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+        <tbody>
+            <tr>
+                <td>Túl rövid felhasználónévre váltunk</td>
+                <td>8 karakternél hosszabb kell legyen az új felhasználónév, hibát dob</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+        <tbody>
+            <tr>
+                <td>Túl hosszú felhasználónévre váltunk</td>
+                <td>32 karakternél rövidebb kell legyen az új felhasználónév, hibát dob</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+        <tbody>
+            <tr>
+                <td>Egyedi felhasználónév megadása </td>
+                <td>Egyedi felhasználónév megadással kicseréli az előzőt erre</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+        <tbody>
+            <tr>
+                <td>Nincs jelszó megadva</td>
+                <td>Nem lehet üres a jelszó mező, a csere nem történik meg, az előző jelszó marad</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+        <tbody>
+            <tr>
+                <td>Túl rövid a jelszó</td>
+                <td>Nem éri el a 8 karakter hosszt, nem változik meg az előző jelszó</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+        <tbody>
+            <tr>
+                <td>Túl hosszú a jelszó</td>
+                <td>A 32 karakternél hosszabb, nem változik meg az előző jelszó</td>
+                <td>Siker</td>
+            </tr>
+        <tbody>
+            <tr>
+                <td>Jó formátumban lett megírva mind a két jelszó és a régi jelszó is helyes</td>
+                <td>A régi jelszó ami szintén jól volt megadva, lecserélődik az új jelszóra</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+        <tbody>
+            <tr>
+                <td>Régi jelszó hibás</td>
+                <td>Nem változik meg a jelszó, mivel a régi jelszó hibás</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+        <tbody>
+            <tr>
+                <td>A két jelszó különbözik</td>
+                <td>A két jelszó nem egyezik a régi jelszó nem lesz lecserélve</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+        <tbody>
+            <tr>
+                <td>Foglalt emailre csere</td>
+                <td>A mostani emailt nem lehet, egy már foglalt emailre cserélni</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+        <tbody>
+            <tr>
+                <td>Email rossz formátumú megadása</td>
+                <td>Rossz formátumban lett megadva az email a csere nem történik meg</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+        <tbody>
+            <tr>
+                <td>Egyedi email megadása</td>
+                <td>Kicserélődik a régi email az újra</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+        <tbody>
+            <tr>
+                <td>Profilkép feltöltés</td>
+                <td>A kiválasztot kép lesz az profilkép</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+        <tbody>
+            <tr>
+                <td>Profilkép csere</td>
+                <td>Az előző profilkép kicserélése az újra</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+        <tbody>
+            <tr>
+                <td>Profilkép törlés</td>
+                <td>A profilkép törlése és az alap profilkép beállítása</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+        <tbody>
+            <tr>
+                <td>Api kulcs hozzáadása</td>
+                <td>A megadott kulcs lesz az api kulcs</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+        <tbody>
+            <tr>
+                <td>Api kulcs csere</td>
+                <td>Kicseréli az eddigi api kulcsot az újra</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+        <tbody>
+            <tr>
+                <td>Api kulcs törlése</td>
+                <td>Törli az api kulcsot</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Dashboard</h3>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Leírás</th>
+                <th>Elvárt eredmény</th>
+                <th>Státusz</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Felhasználó dokumentumok listázása</td>
+                <td>A felhasználó által készített dokumentumok megjelennek a dashboard-on (ha vannak)</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>Dokumentum megtekintés gomb megnyomása</td>
+                <td>Felugrik egy dokumentum előnézet modal, amiben az adott dokumentum tartalma hiánytalanul szerepel</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>Dokumentum szerkesztés gomb megnyomása</td>
+                <td>Az oldal átirányít a szerkesztő oldalra, a kiválasztott dokumentum adataival inicializálva.</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>Dokumentum AI szerkesztés gomb megnyomása</td>
+                <td>Az oldal átirányít az AI generáló oldalra, a kiválasztott dokumentum adataival inicializálva.</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>Kézi szerkesztő gomb megnyomása</td>
+                <td>Az oldal átirányít a szerkesztő oldalra egy üres lappal</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>AI Generátor gomb megnyomása</td>
+                <td>Az oldal átirányít az AI generátor oldalra, egy üres lappal</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>Dokumentum törlés gomb megnyomása</td>
+                <td>Az adott dokumentum eltűnik a dashboard-ról és törlődik az adatbázisból</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Navbar</h3>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Leírás</th>
+                <th>Elvárt eredmény</th>
+                <th>Státusz</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Kijelentkezés gomb megnyomása</td>
+                <td>A felhasználó kijelentkezik és átirányít a bejelentkezési oldalra</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>Settings gomb megnyomása</td>
+                <td>Az oldal átirányít a profil oldalra</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>Dashboard gomb megnyomása</td>
+                <td>Az oldal átirányít a dashboard oldalra</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>Felhasználónév frissítése</td>
+                <td>A felhasználónév módosítása után a megjelenített név automatikusan frissül</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>CV Builder</h3>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Leírás</th>
+                <th>Elvárt eredmény</th>
+                <th>Státusz</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Üres beviteli mező szerkesztése</td>
+                <td>Az adott szekció megjelenik a dokumentum előnézeten, a megadott adatokkal együtt</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>Új blokk beszúrása ("+Új gomb")</td>
+                <td>Az adott szekcióhoz új elem kerül beszúrásra a szerkesztő és előnézet blokkokban egyaránt</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>Oldal betöltése létező dokumentummal</td>
+                <td>A szerkesztő és előnézet rész az adott dokumentum adataival inicializálódik</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>Szerkesztő URL-ben dokumentum ID beszúrása (vagy kicserélése) saját dokumentum ID-jére</td>
+                <td>A dokumentum megnyílik szerkesztésre és a szerkesztő és előnézet rész az adott dokumentum adataival inicializálódik</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>Szerkesztő URL-ben dokumentum ID beszúrása (vagy kicserélése) idegen dokumentum ID-jére</td>
+                <td>A dokumentum nem kerül betöltésre, a szerkesztő üres beviteli mezőkkel és előnézettel nyílik meg</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>Mentés gomb megnyomása</td>
+                <td>A dokumentum adatai felkerülnek az adatbázisba, ezután az oldap átirányít a dashboard-ra</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>PDF gomb megnyomása</td>
+                <td>Felugrik egy PDF nyomtatás ablak, ahol a PDF és az előnézet tartalma és stílusa is azonos</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>CV Generator</h3>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Leírás</th>
+                <th>Elvárt eredmény</th>
+                <th>Státusz</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Új üzenet írása a chatablakba</td>
+                <td>Az AI feldolgozza a felhasználó üzenetét, majd annak tartalma alapján válaszol</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>Releváns információ megadása</td>
+                <td>Amennyiben a felhasználó CV építés szempontjából releváns információt ad, azt az AI feldolgozza és bekerül az előnézetbe</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>Oldal betöltése szerkesztés módban</td>
+                <td>A szerkesztett dokumentum adatai betöltődnek az előnézetbe, illetve ezeket az AI is tudja olvasni.</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>Szerkesztés esetén URL-ben dokumentum ID beszúrása (vagy kicserélése) saját dokumentum ID-jére</td>
+                <td>A dokumentum megnyílik szerkesztésre és az előnézet rész az adott dokumentum adataival inicializálódik, az AI látja a kért dokumentum adatait</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>Szerkesztés esetén URL-ben dokumentum ID beszúrása (vagy kicserélése) idegen dokumentum ID-jére</td>
+                <td>A dokumentum nem kerül betöltésre, az oldal üres előnézettel nyílik meg, az AI nem ismeri a kért dokumentum adatait</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>Finalize gomb megnyomása</td>
+                <td>A dokumentum véglegesítése után az felkerül az adatbázisba. Ezután az oldal visszadob a dashboard-ra, ahol az új dokumentum a régebbiekkel együtt megtekinthető</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <br>
+    <hr>
+    <h2>Back-end</h2>
+
+
 
 </body>
 
