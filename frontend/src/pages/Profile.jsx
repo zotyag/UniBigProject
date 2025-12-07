@@ -1,7 +1,16 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchUserProfile, updateUserProfile, setGeminiApiKey, deleteGeminiApiKey, changeUserPassword } from '../api';
+import {
+	fetchUserProfile,
+	updateUserProfile,
+	setGeminiApiKey,
+	deleteGeminiApiKey,
+	changeUserPassword,
+	setProfilePicture,
+	deleteProfilePicture,
+	getProfilePicture,
+} from '../api';
 import { Form, Button, Alert, Card, Badge, InputGroup, Spinner } from 'react-bootstrap';
 
 const Profile = () => {
@@ -27,6 +36,13 @@ const Profile = () => {
 	const { data: user, isLoading } = useQuery({
 		queryKey: ['userProfile'],
 		queryFn: fetchUserProfile,
+	});
+
+	// 2. KÉP LEKÉRÉSE (Külön query!)
+	const { data: avatarData, isLoading: isAvatarLoading } = useQuery({
+		queryKey: ['userAvatar'],
+		queryFn: getProfilePicture,
+		retry: false, // Ha nincs kép (404), ne próbálkozzon újra
 	});
 
 	// Ha megjött az adat, töltsük ki a mezőket
@@ -120,6 +136,26 @@ const Profile = () => {
 		onError: () => setMessage({ type: 'danger', text: 'Hiba a törléskor.' }),
 	});
 
+	// KÉP FELTÖLTÉS (Base64)
+	const avatarMutation = useMutation({
+		mutationFn: setProfilePicture,
+		onSuccess: () => {
+			setMessage({ type: 'success', text: 'Profilkép frissítve!' });
+			queryClient.invalidateQueries(['userAvatar']); // Azonnal frissüljön a kép
+		},
+		onError: (err) => setMessage({ type: 'danger', text: err.message || 'Hiba a feltöltéskor.' }),
+	});
+
+	// KÉP TÖRLÉS
+	const deleteAvatarMutation = useMutation({
+		mutationFn: deleteProfilePicture,
+		onSuccess: () => {
+			setMessage({ type: 'warning', text: 'Profilkép törölve.' });
+			queryClient.invalidateQueries(['userAvatar']);
+		},
+		onError: (err) => setMessage({ type: 'danger', text: 'Hiba a törléskor.' }),
+	});
+
 	// HANDLERS
 	const handleSave = (e) => {
 		e.preventDefault();
@@ -160,7 +196,35 @@ const Profile = () => {
 		}
 	};
 
+	// JAVÍTOTT KÉPKEZELŐ: Base64 konverzió
+	const handleFileChange = (e) => {
+		const file = e.target.files[0];
+		if (file) {
+			// Ellenőrzés: max 5MB
+			if (file.size > 5 * 1024 * 1024) {
+				setMessage({ type: 'danger', text: 'A kép túl nagy! (Max 5MB)' });
+				return;
+			}
+
+			const reader = new FileReader();
+			reader.onloadend = () => {
+				// reader.result tartalmazza a "data:image/png;base64,..." stringet
+				// Ezt küldjük el közvetlenül az API-nak
+				avatarMutation.mutate(reader.result);
+			};
+			reader.readAsDataURL(file);
+		}
+	};
+
+	const handleDeleteAvatar = () => {
+		if (confirm('Biztosan törlöd a profilképet?')) {
+			deleteAvatarMutation.mutate();
+		}
+	};
+
 	if (isLoading) return <div className='p-5 text-center'>Betöltés...</div>;
+
+	const profilePicUrl = avatarData?.url || null;
 
 	return (
 		<div className='min-h-screen bg-gray-50 py-10 px-4'>
@@ -189,9 +253,52 @@ const Profile = () => {
 					<div className='lg:col-span-2 space-y-6'>
 						<Card className='shadow-sm border-0'>
 							<Card.Body className='p-6'>
-								<h3 className='text-xl font-bold mb-4 text-gray-700 border-b pb-2'>
-									Személyes Adatok
-								</h3>
+								<div className='flex items-start justify-between mb-6 border-b pb-4'>
+									<h3 className='text-xl font-bold mb-4 text-gray-700 border-b pb-2'>
+										Személyes Adatok
+									</h3>
+									{/* PROFILKÉP MEGJELENÍTÉS (Javítva) */}
+									<div className='flex flex-col items-center gap-2'>
+										<div
+											className='relative w-20 h-20 group cursor-pointer'
+											onClick={() => fileInputRef.current.click()}
+										>
+											<div className='w-full h-full rounded-full overflow-hidden border-2 border-gray-200 shadow-sm flex items-center justify-center bg-blue-50 text-blue-600 text-2xl font-bold'>
+												{isAvatarLoading ? (
+													<Spinner size='sm' animation='border' />
+												) : profilePicUrl ? (
+													<img
+														src={profilePicUrl}
+														alt='Profile'
+														className='w-full h-full object-cover'
+													/>
+												) : (
+													user?.username?.[0].toUpperCase()
+												)}
+											</div>
+											<div className='absolute inset-0 bg-black bg-opacity-40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity'>
+												<span className='text-white text-xs font-bold'>Csere</span>
+											</div>
+										</div>
+										<input
+											type='file'
+											ref={fileInputRef}
+											className='hidden'
+											accept='image/*'
+											onChange={handleFileChange}
+										/>
+
+										{profilePicUrl && (
+											<button
+												onClick={handleDeleteAvatar}
+												className='text-xs text-red-500 hover:text-red-700 underline border-0 bg-transparent'
+											>
+												Kép törlése
+											</button>
+										)}
+										{avatarMutation.isPending && <Spinner size='sm' animation='border' />}
+									</div>
+								</div>
 								<Form onSubmit={handleSave}>
 									<Form.Group className='mb-4'>
 										<Form.Label className='font-semibold text-gray-600'>

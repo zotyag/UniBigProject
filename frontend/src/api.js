@@ -31,7 +31,6 @@ const normalizeDocumentData = (rawData) => {
 		normalizedSkills = root.skills;
 	}
 
-
 	const cvData = {
 		personal_info: {
 			full_name: root.profile?.name || root.personal_info?.full_name || '',
@@ -189,4 +188,27 @@ export const finalizeChatSession = async ({ sessionId, title }) => {
 		method: 'POST',
 		body: JSON.stringify({ title: title || 'AI CV', template_code: 'default' }),
 	});
+};
+
+/* ==========================================================================
+   PROFILE PICTURE ENDPOINTS (Base64)
+   ========================================================================== */
+
+// 1. Get Profile Picture
+export const getProfilePicture = async () => {
+	return apiFetch('/users/me/profile-picture');
+};
+
+// 2. Set/Update Profile Picture
+// A dokumentáció szerint JSON-t vár: { "image_data": "data:image/png;base64,..." }
+export const setProfilePicture = async (base64Image) => {
+	return apiFetch('/users/me/profile-picture', {
+		method: 'POST',
+		body: JSON.stringify({ image_data: base64Image }),
+	});
+};
+
+// 3. Delete Profile Picture
+export const deleteProfilePicture = async () => {
+	return apiFetch('/users/me/profile-picture', { method: 'DELETE' });
 };

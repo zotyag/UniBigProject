@@ -428,20 +428,28 @@ const ManualCVBuilder = () => {
 						</Accordion.Item>
 
 						{/* 5. SKILLS (Objektum alapú!) */}
+						{/* 5. KÉSZSÉGEK - JAVÍTVA (defaultValue + onBlur) */}
 						<Accordion.Item eventKey='4'>
 							<Accordion.Header>Készségek</Accordion.Header>
 							<Accordion.Body>
 								<Form.Group className='mb-2'>
-									<Form.Label>Kompetenciák</Form.Label>
+									<Form.Label>Kompetenciák (vesszővel)</Form.Label>
 									<Form.Control
 										as='textarea'
 										rows={2}
+										// Fontos: defaultValue-t használunk, így nem frissül minden karakternél a UI
+										// A .join(', ') biztosítja, hogy vesszővel elválasztva jelenjen meg
 										defaultValue={cvData.skills.core_competencies.join(', ')}
+										// Csak akkor mentünk a state-be, ha a user befejezte az írást!
 										onBlur={(e) => handleSkillChange('core_competencies', e.target.value)}
+										// Ha az AI vagy betöltés miatt változik a háttérben az adat,
+										// a 'key' segít újrarenderelni a mezőt
+										key={`core-${cvData.skills.core_competencies.join(',')}`}
 									/>
 								</Form.Group>
+
 								<Form.Group className='mb-2'>
-									<Form.Label>Szoftverek</Form.Label>
+									<Form.Label>Szoftverek (vesszővel)</Form.Label>
 									<Form.Control
 										as='textarea'
 										rows={2}
@@ -449,15 +457,18 @@ const ManualCVBuilder = () => {
 										onBlur={(e) =>
 											handleSkillChange('software_proficiency', e.target.value)
 										}
+										key={`soft-${cvData.skills.software_proficiency.join(',')}`}
 									/>
 								</Form.Group>
+
 								<Form.Group>
-									<Form.Label>Nyelvek</Form.Label>
+									<Form.Label>Nyelvek (vesszővel)</Form.Label>
 									<Form.Control
 										as='textarea'
 										rows={2}
 										defaultValue={cvData.skills.language_fluency.join(', ')}
 										onBlur={(e) => handleSkillChange('language_fluency', e.target.value)}
+										key={`lang-${cvData.skills.language_fluency.join(',')}`}
 									/>
 								</Form.Group>
 							</Accordion.Body>
