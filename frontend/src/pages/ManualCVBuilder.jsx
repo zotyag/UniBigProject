@@ -45,15 +45,6 @@ const ManualCVBuilder = () => {
 	});
 
 	useEffect(() => {
-		// if (existingDoc) {
-		// 	// Itt majd a Dashboardnál javított logika szerint kell kinyerni az adatot
-		// 	// De ha új struktúrában mentünk, akkor simán betöltődik.
-		// 	// Egyelőre feltételezzük, hogy a user_data már a jó formátumban van.
-		// 	const content = existingDoc.content_json || existingDoc.user_data || {};
-		// 	setDocTitle(existingDoc.title || '');
-		// 	setCvData((prev) => ({ ...prev, ...content }));
-		// }
-
 		if (existingDoc) {
 			// JAVÍTÁS: Az api.js már normalizálta az adatot, és a .cvData mezőbe tette!
 			// Ha esetleg mégsem, akkor próbáljuk a régiekből.
@@ -106,16 +97,6 @@ const ManualCVBuilder = () => {
 	// Summary
 	const handleSummaryChange = (val) => {
 		setCvData((prev) => ({ ...prev, summary: val }));
-	};
-
-	const handleImageUpload = (e) => {
-		const file = e.target.files[0];
-		if (file) {
-			const reader = new FileReader();
-			reader.onloadend = () =>
-				setCvData((prev) => ({ ...prev, profilePictureUrl: reader.result }));
-			reader.readAsDataURL(file);
-		}
 	};
 
 	// Listák (Experience, Education)
@@ -228,10 +209,6 @@ const ManualCVBuilder = () => {
 										value={cvData.personal_info.website}
 										onChange={(e) => handleInfoChange('website', e.target.value)}
 									/>
-								</Form.Group>
-								<Form.Group className='mb-3'>
-									<Form.Label>Kép</Form.Label>
-									<Form.Control type='file' onChange={handleImageUpload} />
 								</Form.Group>
 							</Accordion.Body>
 						</Accordion.Item>
