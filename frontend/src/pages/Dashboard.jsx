@@ -1,27 +1,35 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useReactToPrint } from 'react-to-print';
 import { fetchDocuments, deleteDocument, fetchDocumentById } from '../api';
 import { Button, Card, Badge, Spinner, Container, Row, Col, Modal } from 'react-bootstrap';
 import Preview from '../components/PreviewForBuilder';
-import { useReactToPrint } from 'react-to-print';
 
 const Dashboard = () => {
+	// --- HOOKS ---
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
-
-	const [selectedDoc, setSelectedDoc] = useState(null);
-	const [showPreview, setShowPreview] = useState(false);
 	const previewRef = useRef(null);
 
-	// --- EGYSZERŰSÍTETT ADATKINYERÉS ---
-	// Most már csak arra kell figyelni, hogy a backend válaszának melyik mezőjében van a JSON
-	const extractCvData = (dbResponse) => {
-		if (!dbResponse) return {};
-		// A dokumentáció szerint a 'content' vagy 'content_json' mezőben van a struktúra
-		return dbResponse.content || dbResponse.content_json || dbResponse.user_data || {};
+	// --- STATE ---
+	const [selectedDoc, setSelectedDoc] = useState(null);
+	const [showPreview, setShowPreview] = useState(false);
+
+	// --- Helpers ---
+
+	const formatDate = (dateString) => {
+		if (!dateString) return '';
+		return new Date(dateString).toLocaleDateString('hu-HU', {
+			year: 'numeric',
+			month: 'long',
+			day: 'numeric',
+		});
 	};
 
+	// --- Queries ---
+
+	// Fetch all documents for the list view
 	const {
 		data: documents,
 		isLoading,
@@ -31,12 +39,14 @@ const Dashboard = () => {
 		queryFn: () => fetchDocuments(),
 	});
 
+	// --- Mutations ---
+
+	// Fetch full details of a single document (Lazy loading)
 	const fetchDocMutation = useMutation({
 		mutationFn: fetchDocumentById,
 		onSuccess: (data) => {
-			// Az api.js már megcsinálta a cvData-t, itt már készen kapjuk!
 			console.log('Betöltött dokumentum (normalizálva):', data);
-			setSelectedDoc(data); // A data már tartalmazza a .cvData mezőt
+			setSelectedDoc(data);
 			setShowPreview(true);
 		},
 		onError: () => alert('Nem sikerült betölteni a dokumentumot.'),
@@ -50,11 +60,15 @@ const Dashboard = () => {
 		onError: (err) => alert('Hiba a törléskor: ' + err.message),
 	});
 
+	// --- PDF Print Logic ---
+
 	const handlePrint = useReactToPrint({
 		contentRef: previewRef,
 		documentTitle: selectedDoc?.title || 'CV',
 		pageStyle: `@page { size: A4; margin: 0; } @media print { body { -webkit-print-color-adjust: exact; } }`,
 	});
+
+	// --- Event Handlers ---
 
 	const handleDelete = (e, id) => {
 		e.stopPropagation();
@@ -65,14 +79,7 @@ const Dashboard = () => {
 		fetchDocMutation.mutate(id);
 	};
 
-	const formatDate = (dateString) => {
-		if (!dateString) return '';
-		return new Date(dateString).toLocaleDateString('hu-HU', {
-			year: 'numeric',
-			month: 'long',
-			day: 'numeric',
-		});
-	};
+	// --- Render ---
 
 	if (isLoading)
 		return (
@@ -135,7 +142,7 @@ const Dashboard = () => {
 											<Button
 												variant='primary'
 												className='flex-fill btn-sm'
-												onClick={() => navigate(`/cvbuilder/${doc.id}`)} // <--- Ez visz át a szerkesztőbe!
+												onClick={() => navigate(`/cvbuilder/${doc.id}`)}
 											>
 												Szerkesztés
 											</Button>
