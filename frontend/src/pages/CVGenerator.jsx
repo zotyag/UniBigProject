@@ -62,17 +62,36 @@ function CVGenerator() {
 
 	// --- ADAT NORMALIZÁLÓ (AI Objektum -> Preview Tömb) ---
 	const updateCvDataFromAI = (aiResponseData) => {
+		console.log('🔄 AI Response Data Received:', aiResponseData);
 		if (!aiResponseData) return;
 
-		// The backend now sends data in the correct format, so we can merge it directly.
-		setCvData((prev) => ({
-			...prev,
-			...aiResponseData,
-			skills: {
-				...prev.skills,
-				...aiResponseData.skills,
-			},
-		}));
+		// Deep merge for better stability
+		setCvData((prev) => {
+			const newData = {
+				...prev,
+				personal_info: { ...prev.personal_info, ...aiResponseData.personal_info },
+				summary: aiResponseData.summary || prev.summary,
+				// Replace arrays only if they are provided and are actually arrays
+				experience: Array.isArray(aiResponseData.experience)
+					? aiResponseData.experience
+					: prev.experience,
+				education: Array.isArray(aiResponseData.education)
+					? aiResponseData.education
+					: prev.education,
+				skills: {
+					...prev.skills,
+					...aiResponseData.skills,
+				},
+				key_projects_achievements: Array.isArray(aiResponseData.key_projects_achievements)
+					? aiResponseData.key_projects_achievements
+					: prev.key_projects_achievements,
+				awards_and_recognitions: Array.isArray(aiResponseData.awards_and_recognitions)
+					? aiResponseData.awards_and_recognitions
+					: prev.awards_and_recognitions,
+			};
+			console.log('✅ New CV Data State:', newData);
+			return newData;
+		});
 	};
 
 	useEffect(() => {

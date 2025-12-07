@@ -7,6 +7,35 @@ import { GeminiService } from './gemini.service.js';
 import { decryptAPIKey } from '../utils/encryption.js';
 
 export class DocumentService {
+	static _normalizeCvData(cvData) {
+		if (cvData && Array.isArray(cvData.experience)) {
+			cvData.experience.forEach((exp) => {
+				const bullets =
+					exp.description_bullets || exp.key_responsibilities || exp.responsibilities;
+				if (Array.isArray(bullets)) {
+					exp.description = bullets.join('\n');
+					delete exp.description_bullets;
+					delete exp.key_responsibilities;
+					delete exp.responsibilities;
+				}
+				if (exp.company_name) {
+					exp.company = exp.company_name;
+					delete exp.company_name;
+				}
+				if (exp.job_title) {
+					exp.title = exp.job_title;
+					delete exp.job_title;
+				}
+				if (exp.dates_employed) {
+					const dates = exp.dates_employed.split('–').map((d) => d.trim());
+					exp.start_date = dates[0];
+					exp.end_date = dates[1] || 'Present';
+					delete exp.dates_employed;
+				}
+			});
+		}
+		return cvData;
+	}
     static async createDocument(documentData, user) {
         // Check if user has API key
         if (!user.gemini_api_key_encrypted) {
@@ -15,11 +44,15 @@ export class DocumentService {
 
         // Generate content using Gemini
         const apiKey = decryptAPIKey(user.gemini_api_key_encrypted);
-        const contentJson = await GeminiService.generateContent(
+        let contentJson = await GeminiService.generateContent(
             apiKey,
             documentData.user_data,
             documentData.doc_type
         );
+        
+        // Normalize the generated content
+        contentJson = this._normalizeCvData(contentJson);
+
 
         // Create slug
         let slug = slugify(documentData.title, { lower: true, strict: true });
@@ -98,10 +131,13 @@ export class DocumentService {
         if (!mongoDoc) {
             throw new Error('Document content not found');
         }
+        
+        // Normalize the data before sending it to the client
+        const normalizedContent = this._normalizeCvData(mongoDoc.content_json);
 
         return {
             ...pgDoc.toJSON(),
-            content_json: mongoDoc.content_json,
+            content_json: normalizedContent,
             template_code: mongoDoc.template_code,
             state: mongoDoc.state
         };

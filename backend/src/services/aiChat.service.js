@@ -82,16 +82,73 @@ export class AIChatService {
 	 * @param {string} apiKey - The user's API key.
 	 * @returns {Promise<object>} - The updated CV data.
 	 */
+	static _normalizeCvData(cvData) {
+		if (cvData && Array.isArray(cvData.experience)) {
+			cvData.experience.forEach((exp) => {
+				// Handle description: AI might send 'description_bullets' or other variations.
+				const bullets =
+					exp.description_bullets || exp.key_responsibilities || exp.responsibilities;
+				if (Array.isArray(bullets)) {
+					// Join bullets into a single string with newlines and assign to 'description'.
+					exp.description = bullets.join('\n');
+					// Clean up old properties to keep the data structure consistent.
+					delete exp.description_bullets;
+					delete exp.key_responsibilities;
+					delete exp.responsibilities;
+				}
+
+				// Handle company name variations
+				if (exp.company_name) {
+					exp.company = exp.company_name;
+					delete exp.company_name;
+				}
+
+				// Handle job title variations
+				if (exp.job_title) {
+					exp.title = exp.job_title;
+					delete exp.job_title;
+				}
+
+				// Handle dates
+				if (exp.dates_employed) {
+					const dates = exp.dates_employed.split('–').map((d) => d.trim());
+					exp.start_date = dates[0];
+					exp.end_date = dates[1] || 'Present';
+					delete exp.dates_employed;
+				}
+			});
+		}
+		return cvData;
+	}
+
+	/**
+	 * AI Function 1: Updates the CV JSON based on user's response.
+	 * @param {object} currentCv - The current CV data as a JSON object.
+	 * @param {string} lastQuestion - The last question the AI asked the user.
+	 * @param {string} userResponse - The user's response to the question.
+	 * @param {string} apiKey - The user's API key.
+	 * @returns {Promise<object>} - The updated CV data.
+	 */
 	static async _updateCvWithUserResponse(currentCv, lastQuestion, userResponse, apiKey) {
 		const prompt = `You are a CV data processing expert.
 Your task is to update a CV provided in JSON format based on a user's response to a specific question.
 Analyze the user's response and integrate the new information into the correct fields of the JSON structure.
 
-RULES:
+**RULES:**
 1.  ONLY return the complete, updated JSON object.
 2.  Do NOT return any explanatory text, markdown, or anything other than the raw JSON.
 3.  If the user's response is unclear or doesn't answer the question, return the original JSON unchanged.
-4.  Merge new information correctly (e.g., add new items to arrays, update string fields).
+4.  Merge new information correctly. For the 'experience' array, each object MUST follow this structure:
+    {
+      "company": "Company Name",
+      "title": "Job Title",
+      "position": "Job Title",
+      "start_date": "YYYY-MM",
+      "end_date": "YYYY-MM" or "Present",
+      "location": "City, Country",
+      "description": "A summary of responsibilities and achievements."
+    }
+    The 'description' can be a single string or an array of strings under 'description_bullets'.
 
 **Current CV JSON:**
 \`\`\`json
@@ -107,7 +164,14 @@ ${JSON.stringify(currentCv, null, 2)}
 Return the updated and complete JSON object now.`;
 
 		const responseText = await this._callGemini(apiKey, prompt);
-		const updatedCv = this._parseJsonResponse(responseText);
+		let updatedCv = this._parseJsonResponse(responseText);
+
+		if (!updatedCv) {
+			return currentCv;
+		}
+
+		// Normalize the data structure after receiving it from the AI.
+		updatedCv = this._normalizeCvData(updatedCv);
 
 		// If parsing fails or AI returns non-JSON, return the original CV to avoid data loss.
 		return updatedCv || currentCv;
