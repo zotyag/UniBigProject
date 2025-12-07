@@ -62,7 +62,6 @@ jobs:
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'smartercv'
-          slot-name: 'Production'
           package: .
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
 
