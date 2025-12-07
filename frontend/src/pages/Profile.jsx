@@ -14,38 +14,46 @@ import {
 import { Form, Button, Alert, Card, Badge, InputGroup, Spinner } from 'react-bootstrap';
 
 const Profile = () => {
+	// --- HOOKS ---
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
 	const fileInputRef = useRef(null);
 
+	// --- State: User Info ---
 	const [username, setUsername] = useState('');
 	const [email, setEmail] = useState('');
+
+	// --- State: Password change ---
 	const [oldPassword, setOldPassword] = useState('');
 	const [password, setPassword] = useState('');
 	const [confirmPassword, setConfirmPassword] = useState('');
 
-	// Állapotok a visszajelzésekhez
-	const [message, setMessage] = useState({ type: '', text: '' });
-	const [validationErrors, setValidationErrors] = useState({});
-
-	// Gemini Key state
+	// --- State: Gemini API Key ---
 	const [apiKeyInput, setApiKeyInput] = useState('');
 	const [showApiKey, setShowApiKey] = useState(false);
 
-	// ADATOK LEKÉRÉSE
+	// --- State: UI Feedback ---
+	const [message, setMessage] = useState({ type: '', text: '' });
+	const [validationErrors, setValidationErrors] = useState({});
+
+	// --- Queries ---
+
+	// Fetch user profile data
 	const { data: user, isLoading } = useQuery({
 		queryKey: ['userProfile'],
 		queryFn: fetchUserProfile,
 	});
 
-	// 2. KÉP LEKÉRÉSE (Külön query!)
+	// Fetch user profile picture
 	const { data: avatarData, isLoading: isAvatarLoading } = useQuery({
 		queryKey: ['userAvatar'],
 		queryFn: getProfilePicture,
-		retry: false, // Ha nincs kép (404), ne próbálkozzon újra
+		retry: false, // Do not retry on 404 (no image)
 	});
 
-	// Ha megjött az adat, töltsük ki a mezőket
+	// --- Effects ---
+
+	// Sync sate with fetched user data
 	useEffect(() => {
 		if (user) {
 			setUsername(user.username || '');
@@ -53,39 +61,8 @@ const Profile = () => {
 		}
 	}, [user]);
 
-	// VALIDÁCIÓS LOGIKA (Ugyanaz a Regex, mint a regisztrációnál)
-	const validateForm = () => {
-		let errors = {};
-		// A RegEx pontosan a Register.jsx-ből
-		const passwordPattern = new RegExp(
-			'^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&\\.])[A-Za-z\\d@$!%*?&\\.]{8,32}$',
-		);
+	// --- Mutations ---
 
-		// Csak akkor validálunk jelszót, ha a felhasználó írt valamit a mezőbe!
-		if (password) {
-			if (!oldPassword) {
-				errors.oldPassword = 'A jelszó megváltoztatásához meg kell adni a régit.';
-			}
-
-			// 1. Jelszó erősség ellenőrzése
-			if (!passwordPattern.test(password)) {
-				errors.password =
-					'A jelszónak 8-32 karakter hosszúnak kell lennie, tartalmaznia kell kis- és nagybetűt, számot és speciális karaktert.';
-			}
-
-			// 2. Jelszó megerősítés ellenőrzése
-			if (!confirmPassword) {
-				errors.confirmPassword = 'Kérlek erősítsd meg a jelszót.';
-			} else if (password !== confirmPassword) {
-				errors.confirmPassword = 'A jelszavak nem egyeznek.';
-			}
-		}
-
-		setValidationErrors(errors);
-		return Object.keys(errors).length === 0; // Ha nincs hiba, true-val tér vissza
-	};
-
-	// PROFIL MÓDOSÍTÁSA
 	const updateProfileMutation = useMutation({
 		mutationFn: updateUserProfile,
 		onSuccess: () => {
@@ -98,7 +75,6 @@ const Profile = () => {
 		onError: () => setMessage({ type: 'danger', text: 'Hiba a mentéskor.' }),
 	});
 
-	// JELSZÓ MÓDOSÍTÁSA
 	const passwordMutation = useMutation({
 		mutationFn: changeUserPassword,
 		onSuccess: () => {
@@ -109,14 +85,11 @@ const Profile = () => {
 			setValidationErrors({});
 		},
 		onError: (err) => {
-			const defaultMessage = 'Hiba a jelszó módosításakor.';
-			// Próbáljuk meg kinyerni a konkrét hibaüzenetet a backend válaszából
-			const errorMessage = err.message || defaultMessage;
+			const errorMessage = err.message || 'Hiba a jelszó módosításakor.';
 			setMessage({ type: 'danger', text: errorMessage });
 		},
 	});
 
-	// GEMINI API KULCS KEZELÉS MUTÁCIÓK
 	const apiKeyMutation = useMutation({
 		mutationFn: setGeminiApiKey,
 		onSuccess: () => {
@@ -136,7 +109,6 @@ const Profile = () => {
 		onError: () => setMessage({ type: 'danger', text: 'Hiba a törléskor.' }),
 	});
 
-	// KÉP FELTÖLTÉS (Base64)
 	const avatarMutation = useMutation({
 		mutationFn: setProfilePicture,
 		onSuccess: () => {
@@ -146,27 +118,54 @@ const Profile = () => {
 		onError: (err) => setMessage({ type: 'danger', text: err.message || 'Hiba a feltöltéskor.' }),
 	});
 
-	// KÉP TÖRLÉS
 	const deleteAvatarMutation = useMutation({
 		mutationFn: deleteProfilePicture,
 		onSuccess: () => {
 			setMessage({ type: 'warning', text: 'Profilkép törölve.' });
 			queryClient.invalidateQueries(['userAvatar']);
 		},
-		onError: (err) => setMessage({ type: 'danger', text: 'Hiba a törléskor.' }),
+		onError: (err) => setMessage({ type: 'danger', text: err.message || 'Hiba a törléskor.' }),
 	});
 
-	// HANDLERS
+	// --- Helper Functions ---
+
+	const validateForm = () => {
+		let errors = {};
+		// Password complexity regex: min 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 special char
+		const passwordPattern = new RegExp(
+			'^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&\\.])[A-Za-z\\d@$!%*?&\\.]{8,32}$',
+		);
+
+		if (password) {
+			if (!oldPassword) {
+				errors.oldPassword = 'A jelszó megváltoztatásához meg kell adni a régit.';
+			}
+
+			if (!passwordPattern.test(password)) {
+				errors.password =
+					'A jelszónak 8-32 karakter hosszúnak kell lennie, tartalmaznia kell kis- és nagybetűt, számot és speciális karaktert.';
+			}
+
+			if (!confirmPassword) {
+				errors.confirmPassword = 'Kérlek erősítsd meg a jelszót.';
+			} else if (password !== confirmPassword) {
+				errors.confirmPassword = 'A jelszavak nem egyeznek.';
+			}
+		}
+
+		setValidationErrors(errors);
+		return Object.keys(errors).length === 0;
+	};
+
+	// --- Event Handlers ---
 	const handleSave = (e) => {
 		e.preventDefault();
 		setMessage({ type: '', text: '' });
 
-		// Validáció futtatása mentés előtt
 		if (!validateForm()) {
-			return; // Ha hiba van, megállunk
+			return;
 		}
 
-		// Megnézzük, hogy a jelszó mezők ki vannak-e töltve
 		if (password) {
 			passwordMutation.mutate({
 				old_password: oldPassword,
@@ -175,7 +174,6 @@ const Profile = () => {
 			});
 		}
 
-		// A profiladatokat (pl. username) külön frissítjük, ha változtak
 		if (username !== user.username || email !== user.email) {
 			updateProfileMutation.mutate({ username, email });
 		}
@@ -196,11 +194,9 @@ const Profile = () => {
 		}
 	};
 
-	// JAVÍTOTT KÉPKEZELŐ: Base64 konverzió
 	const handleFileChange = (e) => {
 		const file = e.target.files[0];
 		if (file) {
-			// Ellenőrzés: max 5MB
 			if (file.size > 5 * 1024 * 1024) {
 				setMessage({ type: 'danger', text: 'A kép túl nagy! (Max 5MB)' });
 				return;
@@ -208,8 +204,6 @@ const Profile = () => {
 
 			const reader = new FileReader();
 			reader.onloadend = () => {
-				// reader.result tartalmazza a "data:image/png;base64,..." stringet
-				// Ezt küldjük el közvetlenül az API-nak
 				avatarMutation.mutate(reader.result);
 			};
 			reader.readAsDataURL(file);
@@ -249,7 +243,7 @@ const Profile = () => {
 				)}
 
 				<div className='grid grid-cols-1 lg:grid-cols-3 gap-8'>
-					{/* --- BAL OSZLOP: SZEMÉLYES ADATOK ÉS JELSZÓ --- */}
+					{/* --- SZEMÉLYES ADATOK ÉS JELSZÓ --- */}
 					<div className='lg:col-span-2 space-y-6'>
 						<Card className='shadow-sm border-0'>
 							<Card.Body className='p-6'>
@@ -257,7 +251,7 @@ const Profile = () => {
 									<h3 className='text-xl font-bold mb-4 text-gray-700 border-b pb-2'>
 										Személyes Adatok
 									</h3>
-									{/* PROFILKÉP MEGJELENÍTÉS (Javítva) */}
+									{/* PROFILKÉP MEGJELENÍTÉS */}
 									<div className='flex flex-col items-center gap-2'>
 										<div
 											className='relative w-20 h-20 group cursor-pointer'
@@ -319,7 +313,7 @@ const Profile = () => {
 										<Form.Control
 											type='email'
 											value={email}
-											onChange={(e) => setEmail(e.target.value)} // Elvileg read-only, de ha az API engedi, maradhat
+											onChange={(e) => setEmail(e.target.value)}
 											className='bg-gray-50 border-gray-300 focus:bg-white transition-colors'
 										/>
 									</Form.Group>
@@ -408,7 +402,7 @@ const Profile = () => {
 						</Card>
 					</div>
 
-					{/* --- JOBB OSZLOP: AI BEÁLLÍTÁSOK --- */}
+					{/* --- AI BEÁLLÍTÁSOK --- */}
 					<div className='lg:col-span-1'>
 						<Card
 							className={`shadow-sm border-0 ${

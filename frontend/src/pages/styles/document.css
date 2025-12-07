@@ -1,15 +1,14 @@
 @page {
 	size: A4;
-	/* margin: 20mm; */
 	margin: 0;
 }
 .document {
 	width: 210mm;
-	height: 296.85mm; /* fix A4 magasság */
+	height: 296.85mm;
 	box-sizing: border-box;
-	padding: 15mm 20mm; /* fent/lent 15mm, jobb/bal 20mm */
+	padding: 15mm 20mm;
 	background: white;
-	margin: 0; /* eltávolítjuk a preview margin-t PDF generáláskor */
+	margin: 0;
 	box-shadow: none;
 }
 

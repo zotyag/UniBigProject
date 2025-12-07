@@ -1,25 +1,22 @@
 /**
  * API Kliens a CV Generátorhoz
- * Dokumentáció alapján: Base URL = http://localhost:3000/api/v1
+ * Base URL = http://localhost:3000/api/v1
  */
 
 const getToken = () => localStorage.getItem('access_token');
 export const BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000') + '/api/v1';
 
 // --- SEGÉDFÜGGVÉNY: ADAT NORMALIZÁLÓ ---
-// Ez a függvény fordítja le a DB formátumot a Preview formátumra
 const normalizeDocumentData = (rawData) => {
 	if (!rawData) return null;
 
 	const root = rawData.content_json || rawData.user_data || rawData.content || rawData;
 
-	// If it's already in the good format, just return it.
 	if (root.personal_info && root.skills && !Array.isArray(root.skills)) {
 		return { ...rawData, cvData: root };
 	}
 
 	let normalizedSkills = {};
-	// If skills is an array of objects (the old, bad format), convert it.
 	if (Array.isArray(root.skills)) {
 		normalizedSkills = root.skills.reduce((acc, skillCategory) => {
 			const categoryKey = skillCategory.category.toLowerCase().replace(/ /g, '_');
@@ -27,7 +24,6 @@ const normalizeDocumentData = (rawData) => {
 			return acc;
 		}, {});
 	} else if (root.skills) {
-		// If it's already an object (the good format), use it directly.
 		normalizedSkills = root.skills;
 	}
 
@@ -67,7 +63,6 @@ const normalizeDocumentData = (rawData) => {
 		awards_and_recognitions: root.awards_and_recognitions || [],
 	};
 
-	// Return the full document with the normalized cvData attached.
 	return { ...rawData, cvData };
 };
 
@@ -102,8 +97,6 @@ export const fetchUserProfile = async () => apiFetch('/users/me');
 export const updateUserProfile = async (data) =>
 	apiFetch('/users/me', { method: 'PUT', body: JSON.stringify(data) });
 
-// Jelszó módosítása
-// Endpoint: PUT /users/me/password
 export const changeUserPassword = async (data) => {
 	return apiFetch('/users/me/password', {
 		method: 'PUT',
@@ -111,12 +104,8 @@ export const changeUserPassword = async (data) => {
 	});
 };
 
-/* ==========================================================================
-   GEMINI API KEY ENDPOINTS
-   ========================================================================== */
+// --- GEMINI API KEY ENDPOINTS ---
 
-// Kulcs mentése
-// Endpoint: POST /users/me/gemini-api-key
 export const setGeminiApiKey = async (apiKey) => {
 	return apiFetch('/users/me/gemini-api-key', {
 		method: 'POST',
@@ -140,10 +129,8 @@ export const fetchDocuments = async (type = null) => {
 
 export const deleteDocument = async (id) => apiFetch(`/documents/${id}`, { method: 'DELETE' });
 
-// ITT A VÁLTOZÁS:
 export const fetchDocumentById = async (id) => {
 	const rawDoc = await apiFetch(`/documents/${id}`);
-	// Azonnal normalizáljuk, mielőtt visszaadnánk!
 	return normalizeDocumentData(rawDoc);
 };
 
@@ -190,17 +177,12 @@ export const finalizeChatSession = async ({ sessionId, title }) => {
 	});
 };
 
-/* ==========================================================================
-   PROFILE PICTURE ENDPOINTS (Base64)
-   ========================================================================== */
+// --- PROFILE PICTURE ENDPOINTS ---
 
-// 1. Get Profile Picture
 export const getProfilePicture = async () => {
 	return apiFetch('/users/me/profile-picture');
 };
 
-// 2. Set/Update Profile Picture
-// A dokumentáció szerint JSON-t vár: { "image_data": "data:image/png;base64,..." }
 export const setProfilePicture = async (base64Image) => {
 	return apiFetch('/users/me/profile-picture', {
 		method: 'POST',
@@ -208,7 +190,6 @@ export const setProfilePicture = async (base64Image) => {
 	});
 };
 
-// 3. Delete Profile Picture
 export const deleteProfilePicture = async () => {
 	return apiFetch('/users/me/profile-picture', { method: 'DELETE' });
 };

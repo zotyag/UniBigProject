@@ -2,33 +2,33 @@ import { useEffect, useState, useRef } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 import { startChatSession, sendChatMessage, finalizeChatSession } from '../api';
-import Preview from '../components/PreviewForBuilder'; // Fontos: A jó preview-t használjuk
+import Preview from '../components/PreviewForBuilder';
 import { Modal, Button } from 'react-bootstrap';
 import { useAuthStore } from '../stores/authStore.js';
 import ReactMarkdown from 'react-markdown';
+
 import './styles/document.css';
 import { BASE_URL as API_BASE_URL } from '../api.js';
 import './styles/app.css';
 
 function CVGenerator() {
+	// --- HOOKS ---
 	const { docId } = useParams();
-	useEffect(() => {
-		document.title = 'CV Generator';
-	}, []);
 	const previewRef = useRef(null);
+	const messagesEndRef = useRef(null);
 
+	// --- STATE ---
 	const accessToken = useAuthStore((state) => state.token);
 	const [sessionId, setSessionId] = useState(null);
 	const [messages, setMessages] = useState([]);
 	const [currentMessage, setCurrentMessage] = useState('');
 	const [isLoading, setIsLoading] = useState(false);
-	const messagesEndRef = useRef(null);
 
 	const [showPreviewModal, setShowPreviewModal] = useState(false);
 	const openPreview = () => setShowPreviewModal(true);
 	const closePreview = () => setShowPreviewModal(false);
 
-	// Kezdeti State - Preview kompatibilis szerkezet (skills = tömb!)
+	// Initial CV Data Structure
 	const [cvData, setCvData] = useState({
 		personal_info: {
 			full_name: '',
@@ -56,45 +56,18 @@ function CVGenerator() {
 	const [progress, setProgress] = useState(0);
 	const [isComplete, setIsComplete] = useState(false);
 
+	// --- Effects ---
+
+	useEffect(() => {
+		document.title = 'CV Generator';
+	}, []);
+
 	// Auto scroll
 	useEffect(() => {
 		messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
 	}, [messages]);
 
-	// --- ADAT NORMALIZÁLÓ (AI Objektum -> Preview Tömb) ---
-	const updateCvDataFromAI = (aiResponseData) => {
-		console.log('🔄 AI Response Data Received:', aiResponseData);
-		if (!aiResponseData) return;
-
-		// Deep merge for better stability
-		setCvData((prev) => {
-			const newData = {
-				...prev,
-				personal_info: { ...prev.personal_info, ...aiResponseData.personal_info },
-				summary: aiResponseData.summary || prev.summary,
-				// Replace arrays only if they are provided and are actually arrays
-				experience: Array.isArray(aiResponseData.experience)
-					? aiResponseData.experience
-					: prev.experience,
-				education: Array.isArray(aiResponseData.education)
-					? aiResponseData.education
-					: prev.education,
-				skills: {
-					...prev.skills,
-					...aiResponseData.skills,
-				},
-				key_projects_achievements: Array.isArray(aiResponseData.key_projects_achievements)
-					? aiResponseData.key_projects_achievements
-					: prev.key_projects_achievements,
-				awards_and_recognitions: Array.isArray(aiResponseData.awards_and_recognitions)
-					? aiResponseData.awards_and_recognitions
-					: prev.awards_and_recognitions,
-			};
-			console.log('✅ New CV Data State:', newData);
-			return newData;
-		});
-	};
-
+	// Initialize chat session
 	useEffect(() => {
 		if (!accessToken) return;
 
@@ -127,7 +100,7 @@ function CVGenerator() {
 				const data = await response.json();
 				setSessionId(data.session_id);
 
-				// ADAT FRISSÍTÉS
+				// update CV data if provided
 				if (data.cv_data) updateCvDataFromAI(data.cv_data);
 
 				setProgress(data.progress);
@@ -145,6 +118,43 @@ function CVGenerator() {
 
 		startChatSession();
 	}, [accessToken, docId]);
+
+	// Normalizes AI response data to match Preview component structure
+	const updateCvDataFromAI = (aiResponseData) => {
+		console.log('🔄 AI Response Data Received:', aiResponseData);
+		if (!aiResponseData) return;
+
+		// Deep merge for better stability
+		setCvData((prev) => {
+			const newData = {
+				...prev,
+				personal_info: { ...prev.personal_info, ...aiResponseData.personal_info },
+				summary: aiResponseData.summary || prev.summary,
+
+				// Replace arrays only if they are provided and are actually arrays
+				experience: Array.isArray(aiResponseData.experience)
+					? aiResponseData.experience
+					: prev.experience,
+				education: Array.isArray(aiResponseData.education)
+					? aiResponseData.education
+					: prev.education,
+				skills: {
+					...prev.skills,
+					...aiResponseData.skills,
+				},
+				key_projects_achievements: Array.isArray(aiResponseData.key_projects_achievements)
+					? aiResponseData.key_projects_achievements
+					: prev.key_projects_achievements,
+				awards_and_recognitions: Array.isArray(aiResponseData.awards_and_recognitions)
+					? aiResponseData.awards_and_recognitions
+					: prev.awards_and_recognitions,
+			};
+			console.log('✅ New CV Data State:', newData);
+			return newData;
+		});
+	};
+
+	// --- Handlers ---
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
@@ -173,7 +183,7 @@ function CVGenerator() {
 			};
 			setMessages((prev) => [...prev, botMessage]);
 
-			// ADAT FRISSÍTÉS MINDEN ÜZENETNÉL
+			// Update CV data if provided
 			if (data.cv_data) updateCvDataFromAI(data.cv_data);
 
 			setProgress(data.progress);
@@ -197,9 +207,6 @@ function CVGenerator() {
 			const response = await fetch(`${API_BASE_URL}/chat/session/${sessionId}/finalize`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
-				// Itt is figyelni kell: a backendnek lehet, hogy konvertálni kell vissza objektummá,
-				// vagy a backend elfogadja a tömböt is.
-				// A legegyszerűbb, ha a már konvertált cvData-t küldjük, ha a backend rugalmas (MongoDB).
 				body: JSON.stringify({ title: title, template_code: 'default' }),
 			});
 			if (!response.ok) throw new Error('Failed to finalize session');

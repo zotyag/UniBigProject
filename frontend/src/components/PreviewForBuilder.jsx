@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getProfilePicture } from '../api';
 
 const Preview = forwardRef(({ data = {} }, ref) => {
+	// --- Props Destructuring with Defaults ---
 	const {
 		personal_info = {},
 		summary = '',
@@ -12,8 +13,6 @@ const Preview = forwardRef(({ data = {} }, ref) => {
 	} = data || {};
 
 	// --- PROFILKÉP LEKÉRÉSE ---
-	// A komponens saját maga intézi!
-	// staleTime: Infinity -> Egyszer letölti, és utána a cache-ből használja, nem kéri le minden rendereléskor
 	const { data: avatarData } = useQuery({
 		queryKey: ['userAvatar'],
 		queryFn: getProfilePicture,
@@ -21,9 +20,9 @@ const Preview = forwardRef(({ data = {} }, ref) => {
 		retry: false,
 	});
 
-	// Prioritás: Ha a 'data'-ban van kép (pl. ideiglenes feltöltés), az nyer.
-	// Ha nincs, akkor a szerverről letöltött profilkép.
 	const displayImage = data.profilePictureUrl || avatarData?.url;
+
+	// --- Style Definitions ---
 
 	const cellStyle = {
 		padding: '4px',
@@ -33,7 +32,9 @@ const Preview = forwardRef(({ data = {} }, ref) => {
 	};
 	const listStyle = { margin: 0, paddingLeft: '15px', listStyleType: 'disc' };
 
-	// Segédfüggvény: Van-e bármilyen skill?
+	// --- Helper Functions ---
+
+	// Check if any skill category has items
 	const hasAnySkill =
 		(skills.core_competencies && skills.core_competencies.length > 0) ||
 		(skills.software_proficiency && skills.software_proficiency.length > 0) ||
@@ -82,7 +83,7 @@ const Preview = forwardRef(({ data = {} }, ref) => {
 				)}
 			</div>
 
-			{/* SUMMARY - Változatlan */}
+			{/* SUMMARY */}
 			{summary && (
 				<div className='mb-6'>
 					<h2 className='text-lg font-bold uppercase mb-2 border-b border-gray-300 pb-1'>
@@ -92,7 +93,7 @@ const Preview = forwardRef(({ data = {} }, ref) => {
 				</div>
 			)}
 
-			{/* EDUCATION - Dátum javítva! */}
+			{/* EDUCATION  */}
 			{education.length > 0 && (
 				<div className='mb-6'>
 					<h2 className='text-lg font-bold uppercase mb-2 border-b border-gray-300 pb-1'>
@@ -113,7 +114,6 @@ const Preview = forwardRef(({ data = {} }, ref) => {
 									<td style={cellStyle} className='bg-gray-50'>
 										<div className='font-bold'>{edu.institution}</div>
 										<div className='text-xs text-gray-600 mt-1'>
-											{/* JAVÍTÁS: Kezeli a startDate/endDate párost és a graduation_date-et is */}
 											{edu.startDate && edu.endDate
 												? `${edu.startDate} - ${edu.endDate}`
 												: edu.graduation_date || ''}
@@ -133,7 +133,7 @@ const Preview = forwardRef(({ data = {} }, ref) => {
 				</div>
 			)}
 
-			{/* EXPERIENCE - Leírás javítva! */}
+			{/* EXPERIENCE */}
 			{experience.length > 0 && (
 				<div className='mb-6'>
 					<h2 className='text-lg font-bold uppercase mb-2 border-b border-gray-300 pb-1'>
@@ -164,7 +164,6 @@ const Preview = forwardRef(({ data = {} }, ref) => {
 											{exp.position || exp.title}
 										</div>
 
-										{/* JAVÍTÁS: Csak a leírás szövegét jelenítjük meg, sortöréssel */}
 										<div className='whitespace-pre-line text-gray-700'>
 											{exp.description || '-'}
 										</div>
@@ -176,7 +175,7 @@ const Preview = forwardRef(({ data = {} }, ref) => {
 				</div>
 			)}
 
-			{/* SKILLS - Változatlan */}
+			{/* SKILLS */}
 			{hasAnySkill && (
 				<div className='mb-6'>
 					<h2 className='text-lg font-bold uppercase mb-2 border-b border-gray-300 pb-1'>
