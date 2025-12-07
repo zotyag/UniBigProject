@@ -22,6 +22,12 @@ function AppNavbar() {
 		if (token && !user) fetchCurrentUser();
 	}, [token, user, fetchCurrentUser]);
 
+	const hideOnPaths = ['/login', '/register'];
+
+	if (hideOnPaths.includes(location.pathname)) {
+		return null;
+	}
+
 	const logout = () => {
 		logoutStore();
 		navigate('/');
