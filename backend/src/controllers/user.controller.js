@@ -7,7 +7,7 @@ export const getProfilePicture = async (req, res, next) => {
 	try {
 		const picture = await ProfilePictureService.getProfilePicture(req.user.id);
 		if (!picture) {
-			return res.status(404).json({ error: 'Profile picture not found' });
+			return res.status(204).send();
 		}
 		res.json({
 			url: picture.image_data,

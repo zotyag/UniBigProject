@@ -8,7 +8,7 @@ export const startChat = async (req, res, next) => {
 
         if (!req.user.gemini_api_key_encrypted) {
             return res.status(400).json({
-                error: 'Gemini API key not set. Please set your API key first.'
+                error: 'Gemini API key not set. Please go to your profile and set your API key to use the AI features.'
             });
         }
 
