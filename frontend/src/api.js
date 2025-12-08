@@ -78,12 +78,6 @@ const apiFetch = async (endpoint, options = {}) => {
 
 	let response = await fetch(`${BASE_URL}${endpoint}`, { ...options, headers });
 
-	// if (response.status === 401) {
-	// 	console.warn('Lejárt token...');
-	// 	localStorage.removeItem('access_token');
-	// 	throw new Error('Nincs bejelentkezve.');
-	// }
-
 	if (response.status === 401) {
 		const refreshToken = getRefreshToken();
 
