@@ -187,7 +187,7 @@ export const createDocument = async ({ title, cvData }) => {
 			doc_type: 'cv',
 			title: title,
 			template_code: 'default',
-			user_data: cvData,
+			content_json: cvData,
 		}),
 	});
 };
@@ -198,7 +198,6 @@ export const updateDocument = async ({ id, title, cvData }) => {
 		body: JSON.stringify({
 			title: title,
 			content_json: cvData,
-			user_data: cvData,
 		}),
 	});
 };

@@ -13,7 +13,15 @@ router.post(
         body('doc_type').isIn(['cv', 'cover_letter']),
         body('title').isLength({ min: 1, max: 200 }).trim(),
         body('template_code').notEmpty(),
-        body('user_data').isObject(),
+        body('user_data').optional().isObject(),
+        body('content_json').optional().isObject(),
+        // Ensure at least one of user_data or content_json is present
+        body().custom((value, { req }) => {
+            if (!req.body.user_data && !req.body.content_json) {
+                throw new Error('Either user_data or content_json must be provided');
+            }
+            return true;
+        }),
         validate
     ],
     documentController.createDocument

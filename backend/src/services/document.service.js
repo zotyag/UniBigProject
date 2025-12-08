@@ -36,22 +36,26 @@ export class DocumentService {
 		}
 		return cvData;
 	}
-    static async createDocument(documentData, user) {
-        // Check if user has API key
-        if (!user.gemini_api_key_encrypted) {
-            throw new Error('Gemini API key not set');
-        }
+	static async createDocument(documentData, user) {
+		let contentJson;
 
-        // Generate content using Gemini
-        const apiKey = decryptAPIKey(user.gemini_api_key_encrypted);
-        let contentJson = await GeminiService.generateContent(
-            apiKey,
-            documentData.user_data,
-            documentData.doc_type
-        );
-        
-        // Normalize the generated content
-        contentJson = this._normalizeCvData(contentJson);
+		// If content_json is provided, use it directly.
+		if (documentData.content_json) {
+			contentJson = this._normalizeCvData(documentData.content_json);
+		}
+		// Otherwise, generate content using Gemini.
+		else {
+			if (!user.gemini_api_key_encrypted) {
+				throw new Error('Gemini API key not set');
+			}
+			const apiKey = decryptAPIKey(user.gemini_api_key_encrypted);
+			contentJson = await GeminiService.generateContent(
+				apiKey,
+				documentData.user_data,
+				documentData.doc_type,
+			);
+			contentJson = this._normalizeCvData(contentJson);
+		}
 
 
         // Create slug
