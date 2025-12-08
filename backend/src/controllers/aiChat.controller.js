@@ -123,14 +123,14 @@ export const finalizeChatCV = async (req, res, next) => {
         // Import dynamically
         const { DocumentService } = await import('../services/document.service.js');
 
-        // Create document - pass the CV data as user_data
-        // This will trigger the normal document creation flow
+        // Create document - pass the CV data as content_json
+        // This will bypass AI regeneration
         const document = await DocumentService.createDocument(
             {
                 doc_type: chatSession.doc_type,
                 title: title || `My ${chatSession.doc_type}`,
                 template_code: template_code || 'default',
-                user_data: cvData  // Use collected data, not re-generate
+                content_json: cvData  // Use collected data, bypass AI regeneration
             },
             req.user,
             null, // db - will be injected by controller
