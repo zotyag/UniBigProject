@@ -1,16 +1,4 @@
-// backend/src/utils/jwt.test.js
-import { jest } from '@jest/globals';
 import { generateAccessToken, generateRefreshToken, verifyToken } from './jwt.js';
-
-// Mock config for deterministic tests
-jest.mock('../config/config.js', () => ({
-    __esModule: true,
-    default: {
-        JWT_SECRET: 'a-super-secret-key-for-testing-only-12345',
-        JWT_EXPIRES_IN: '1m',
-        JWT_REFRESH_EXPIRES_IN: '5m',
-    },
-}));
 
 describe('JWT Utility', () => {
     const userId = 123;

@@ -1,17 +1,5 @@
-// backend/src/utils/encryption.test.js
-import { jest } from '@jest/globals';
 import { encryptAPIKey, decryptAPIKey } from './encryption.js';
 import crypto from 'crypto';
-
-// The module factory for jest.mock must return the mocked module's exports.
-// Since config.js has a default export, we structure the mock like this.
-jest.mock('../config/config.js', () => ({
-    __esModule: true,
-    default: {
-        // Provide a valid key for the test, avoiding the need for .env files
-        ENCRYPTION_KEY: 'a'.repeat(64), // 32-byte hex string
-    },
-}));
 
 describe('Encryption Utility', () => {
     it('should encrypt and then decrypt a string back to its original value', () => {
