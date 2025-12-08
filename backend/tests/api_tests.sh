@@ -1,8 +1,6 @@
 #!/bin/bash
 
 # A simple API test script for the SmartCV backend.
-# Make sure to start the backend server before running this script.
-# This script does NOT require 'jq'.
 
 # --- Configuration ---
 BASE_URL="http://localhost:3000/api/v1"
