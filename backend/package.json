@@ -8,7 +8,8 @@
     "start": "node server.js",
     "dev": "nodemon server.js",
     "db:migrate": "npx sequelize-cli db:migrate",
-    "db:seed": "npx sequelize-cli db:seed:all"
+    "db:seed": "npx sequelize-cli db:seed:all",
+    "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
@@ -29,6 +30,7 @@
     "uuid": "^13.0.0"
   },
   "devDependencies": {
+    "jest": "^30.2.0",
     "nodemon": "^3.0.2",
     "sequelize-cli": "^6.6.2"
   }

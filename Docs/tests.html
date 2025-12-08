@@ -22,6 +22,18 @@
             border: 1px solid #ddd;
             padding: 5px;
         }
+
+        /* Code block styles */
+        pre {
+            background-color: #f4f4f4;
+            border: 1px solid #ddd;
+            padding: 10px;
+            overflow-x: auto;
+        }
+
+        code {
+            font-family: 'Courier New', Courier, monospace;
+        }
     </style>
 </head>
 
@@ -558,9 +570,151 @@
 
     <br>
     <hr>
-    <h2>Back-end</h2>
+    <h2>Back-end API tesztek</h2>
 
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Leírás</th>
+                <th>Végpont</th>
+                <th>HTTP Metódus</th>
+                <th>Elvárt eredmény</th>
+                <th>Státusz</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>Új felhasználó regisztrálása</td>
+                <td>/api/v1/auth/register</td>
+                <td>POST</td>
+                <td>Sikeres regisztráció, access és refresh tokenek visszakapása.</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>Regisztráció létező email címmel</td>
+                <td>/api/v1/auth/register</td>
+                <td>POST</td>
+                <td>Hibaüzenet (409 Conflict), hogy az email már foglalt.</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>Bejelentkezés a felhasználóval</td>
+                <td>/api/v1/auth/login</td>
+                <td>POST</td>
+                <td>Sikeres bejelentkezés, új tokenek visszakapása.</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td>Bejelentkezés hibás jelszóval</td>
+                <td>/api/v1/auth/login</td>
+                <td>POST</td>
+                <td>Hibaüzenet (401 Unauthorized).</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>5</td>
+                <td>Access token frissítése</td>
+                <td>/api/v1/auth/refresh</td>
+                <td>POST</td>
+                <td>Új access token visszakapása.</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>6</td>
+                <td>Felhasználói profil lekérdezése</td>
+                <td>/api/v1/users/me</td>
+                <td>GET</td>
+                <td>A bejelentkezett felhasználó adatainak visszakapása.</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>7</td>
+                <td>Felhasználói profil frissítése</td>
+                <td>/api/v1/users/me</td>
+                <td>PUT</td>
+                <td>A frissített felhasználói adatok visszakapása.</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>8</td>
+                <td>Gemini API kulcs beállítása</td>
+                <td>/api/v1/users/me/gemini-api-key</td>
+                <td>POST</td>
+                <td>Sikeres beállítás (204 No Content).</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>9</td>
+                <td>Új dokumentum (CV) létrehozása</td>
+                <td>/api/v1/documents</td>
+                <td>POST</td>
+                <td>Az újonnan létrehozott dokumentum adatainak visszakapása.</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>10</td>
+                <td>Felhasználó dokumentumainak listázása</td>
+                <td>/api/v1/documents</td>
+                <td>GET</td>
+                <td>A felhasználóhoz tartozó dokumentumok listájának visszakapása.</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>11</td>
+                <td>Specifikus dokumentum lekérdezése</td>
+                <td>/api/v1/documents/:id</td>
+                <td>GET</td>
+                <td>A kért dokumentum részletes adatainak visszakapása.</td>
+                <td>Siker</td>
+            </tr>
+            <tr>
+                <td>12</td>
+                <td>Dokumentum törlése</td>
+                <td>/api/v1/documents/:id</td> 
+                <td>DELETE</td> 
+                <td>Sikeres törlés (204 No Content).</td>
+                <td>Siker</td>
+            </tr>
+             <tr>
+                <td>13</td>
+                <td>Gemini API kulcs törlése</td>
+                <td>/api/v1/users/me/gemini-api-key</td>
+                <td>DELETE</td>
+                <td>Sikeres törlés (204 No Content).</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+    </table>
 
+    <h3>Unit Tesztek (Jest)</h3>
+
+    <h4>Titkosítási segédfüggvény (src/utils/encryption.js)</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>Leírás</th>
+                <th>Elvárt eredmény</th>
+                <th>Státusz</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Titkosítás és sikeres visszafejtés</td>
+                <td>Egy adott szöveg titkosítása, majd visszafejtése után az eredeti, változatlan szöveget adja vissza.</td>
+                <td>Sikeres</td>
+            </tr>
+            <tr>
+                <td>Egyedi titkosítási kimenet (IV)</td>
+                <td>Azonos bemeneti szöveg minden titkosítási alkalommal más kimenetet eredményez a véletlenszerűségi faktornak (IV) köszönhetően.</td>
+                <td>Siker</td>
+            </tr>
+        </tbody>
+    </table>
 
 </body>
 

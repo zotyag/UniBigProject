@@ -131,15 +131,16 @@ export class AIChatService {
 	 * @returns {Promise<object>} - The updated CV data.
 	 */
 	static async _updateCvWithUserResponse(currentCv, lastQuestion, userResponse, apiKey) {
-		const prompt = `You are a CV data processing expert.
-Your task is to update a CV provided in JSON format based on a user's response to a specific question.
-Analyze the user's response and integrate the new information into the correct fields of the JSON structure.
+		const prompt = `You are an expert CV writer and data processor.
+Your primary task is to update a CV (in JSON format) based on a user's response to a question.
 
-**RULES:**
-1.  ONLY return the complete, updated JSON object.
-2.  Do NOT return any explanatory text, markdown, or anything other than the raw JSON.
-3.  If the user's response is unclear or doesn't answer the question, return the original JSON unchanged.
-4.  Merge new information correctly. For the 'experience' array, each object MUST follow this structure:
+**Core Instructions:**
+1.  **Analyze and Professionalize:** Scrutinize the user's response. If the language is informal, incomplete, or not phrased professionally (e.g., "i was in charge of the cash register"), you MUST rewrite it into professional, achievement-oriented language suitable for a CV (e.g., "Managed daily cash flow and reconciled sales receipts").
+2.  **Preserve Quality:** If the user's response is already professional and well-written, use it directly without modification.
+3.  **Integrate Data:** Accurately place the (potentially rephrased) information into the correct fields of the \`Current CV JSON\`.
+4.  **Strict JSON Output:** ONLY return the complete, updated JSON object. Do NOT include any explanations, markdown, or text outside of the JSON structure.
+5.  **Handle Ambiguity:** If the user's response is completely unrelated to the question or too ambiguous to interpret, return the original \`Current CV JSON\` without any changes.
+6.  **Follow Structure:** For the 'experience' array, each object MUST follow this structure:
     {
       "company": "Company Name",
       "title": "Job Title",
